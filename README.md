@@ -21,12 +21,13 @@ docker-compose up -d qdrant logos-mcp
 ### 🎯 Key Features
 
 - **Pure Memory Engine**: Stores personality & knowledge, provides context to LLMs
-- **13+ File Formats**: PDF, DOCX, XLSX, HTML, TXT, MD processing
-- **11 MCP Tools**: Complete knowledge management API
+- **7 File Formats**: PDF, DOCX, HTML, HTM, TXT, CSV, MD processing
+- **16 MCP Tools**: Complete knowledge management API with version reporting
 - **Sophia Methodology**: "Letters for Future Self" personality development
 - **Docker Native**: Portainer/K8s ready with volume persistence
 - **Multi-LLM Support**: Works with OpenAI, Anthropic, Ollama, LMStudio, Gemini
 - **Version Reporting**: Built-in version API and CLI commands
+- **Code Quality**: Automated semgrep rules enforcing KISS principles and best practices
 
 ### 📖 [Full Documentation](#-logos-the-architecture-of-reason)
 
@@ -85,7 +86,7 @@ Logos consists of three interconnected components:
 | **Architecture**   | Monolithic AI        | Memory Engine + LLM Client  |
 | **Logic**          | Scripted/Subjective  | RAG-Grounded / Objective    |
 | **Memory**         | Limited/Proprietary  | Unlimited/Open Collections  |
-| **File Support**   | None                 | 13+ formats with processing |
+| **File Support**   | None                 | 7 formats with processing |
 | **Connectivity**   | Web-based Chat       | MCP Server + CLI Client     |
 | **Infrastructure** | Cloud                | Self-hosted (Docker/Linux)  |
 | **Persistence**    | Unknown              | Docker Volumes + Vector DB  |
@@ -97,7 +98,7 @@ Logos is designed to run in a modular Linux/Docker environment:
 - **Core**: Python-based MCP (Model Context Protocol) server using FastMCP
 - **Memory**: Qdrant (Vector Database) for high-performance semantic retrieval
 - **Embeddings**: Local-first embedding generation via FastEmbed (BAAI/bge-small-en-v1.5)
-- **Document Processing**: Modular text extraction supporting 13+ file formats
+- **Document Processing**: Modular text extraction supporting 7 file formats
 - **CLI**: Optional command-line client with multi-provider LLM support
 - **Deployment**: Docker Compose with Portainer/Kubernetes compatibility
 
@@ -202,7 +203,7 @@ Logos exposes a comprehensive set of MCP tools for memory and knowledge manageme
 
 ### 📁 File Management
 
-- **`add_file`** - Process and store documents (13+ formats supported)
+- **`add_file`** - Process and store documents (7 formats supported)
 - **`add_file_base64`** - Add files from base64 encoded content
 - **`list_files`** - Browse processed documents
 - **`delete_file`** - Remove files by content hash
@@ -213,9 +214,7 @@ Logos exposes a comprehensive set of MCP tools for memory and knowledge manageme
 ### 📋 Supported File Formats
 
 - **📄 Text**: TXT, CSV, MD, HTML, HTM
-- **🏢 Office**: PDF, DOCX, XLSX, PPTX, ODT
-- **📧 Email**: MSG
-- **📰 Other**: RTF
+- **🏢 Office**: PDF, DOCX
 
 ## ⚙️ Configuration
 
@@ -363,7 +362,7 @@ cd logos
 pip install -r requirements-dev.txt
 
 # Run code quality checks
-semgrep --config .semgrep.yml src/  # Security and best practices
+semgrep --config .semgrep.yml src/  # Security, KISS principles, and best practices
 black --check src/                   # Code formatting
 isort --check-only src/             # Import sorting
 flake8 src/                         # Linting
@@ -386,14 +385,16 @@ python -m src.main
 
 ## 🐛 Known Issues & Roadmap
 
-### Current Status (v0.1.0)
+### Current Status (v1.1.0)
 
 - ✅ Core memory engine with RAG retrieval
-- ✅ Multi-format document processing
-- ✅ Full MCP tools API
+- ✅ Multi-format document processing (7 file formats)
+- ✅ Full MCP tools API (16 tools including version reporting)
 - ✅ Docker deployment with volumes
 - ✅ Multi-provider LLM support
 - ✅ Comprehensive test suite (80% coverage)
+- ✅ Automated code quality with semgrep rules
+- ✅ KISS principle enforcement and best practices
 
 ### Upcoming Features
 
