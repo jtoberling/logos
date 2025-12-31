@@ -1,0 +1,480 @@
+"""
+Unit tests for document processor.
+"""
+
+import pytest
+from src.engine.document_processor import (
+    DocumentProcessor,
+    DocumentProcessorError,
+    PlainTextExtractor,
+    PDFTextExtractor,
+    DOCXTextExtractor,
+    HTMLTextExtractor,
+    DocumentProcessorRegistry,
+    DocumentMetadata
+)
+
+
+class TestPlainTextExtractor:
+    """Test plain text extractor."""
+
+    def test_extract_text_utf8(self):
+        """Test UTF-8 text extraction."""
+        extractor = PlainTextExtractor()
+        content = "Hello World\nThis is a test.".encode('utf-8')
+        result = extractor.extract_text(content)
+        assert result == "Hello World This is a test."
+
+    def test_extract_text_with_nulls(self):
+        """Test text with null bytes."""
+        extractor = PlainTextExtractor()
+        content = "Hello\x00World\x00Test".encode('utf-8')
+        result = extractor.extract_text(content)
+        assert result == "Hello World Test"
+
+    def test_get_supported_formats(self):
+        """Test supported formats."""
+        extractor = PlainTextExtractor()
+        formats = extractor.get_supported_formats()
+        assert "TXT" in formats
+        assert "CSV" in formats
+        assert "MD" in formats
+
+    def test_clean_text_null_bytes(self):
+        """Test NULL byte removal."""
+        extractor = PlainTextExtractor()
+        result = extractor.clean_text("test\x00text\x00more")
+        assert result == "test text more"
+
+    def test_clean_text_whitespace(self):
+        """Test whitespace normalization."""
+        extractor = PlainTextExtractor()
+        result = extractor.clean_text("test  \n\n  text\t\tmore")
+        assert result == "test text more"
+
+
+class TestPDFTextExtractor:
+    """Test PDF text extractor."""
+
+    def test_get_supported_formats(self):
+        """Test supported formats."""
+        extractor = PDFTextExtractor()
+        assert extractor.get_supported_formats() == ["PDF"]
+
+    def test_pdf_extractor_initialization(self):
+        """Test PDF extractor initializes correctly."""
+        extractor = PDFTextExtractor()
+        assert extractor.get_supported_formats() == ["PDF"]
+
+
+class TestDOCXTextExtractor:
+    """Test DOCX text extractor."""
+
+    def test_get_supported_formats(self):
+        """Test supported formats."""
+        extractor = DOCXTextExtractor()
+        assert extractor.get_supported_formats() == ["DOCX"]
+
+    def test_docx_extractor_initialization(self):
+        """Test DOCX extractor initializes correctly."""
+        extractor = DOCXTextExtractor()
+        assert extractor.get_supported_formats() == ["DOCX"]
+
+
+class TestHTMLTextExtractor:
+    """Test HTML text extractor."""
+
+    def test_get_supported_formats(self):
+        """Test supported formats."""
+        extractor = HTMLTextExtractor()
+        formats = extractor.get_supported_formats()
+        assert "HTML" in formats
+        assert "HTM" in formats
+
+    def test_html_extractor_initialization(self):
+        """Test HTML extractor initializes correctly."""
+        extractor = HTMLTextExtractor()
+        formats = extractor.get_supported_formats()
+        assert "HTML" in formats
+        assert "HTM" in formats
+
+
+class TestDocumentProcessorRegistry:
+    """Test document processor registry."""
+
+    def test_registry_initialization(self):
+        """Test registry initialization."""
+        registry = DocumentProcessorRegistry()
+        assert len(registry.get_supported_formats()) > 0
+
+    def test_get_extractor(self):
+        """Test getting extractor by format."""
+        registry = DocumentProcessorRegistry()
+        extractor = registry.get_extractor("TXT")
+        assert extractor is not None
+        assert isinstance(extractor, PlainTextExtractor)
+
+    def test_is_supported(self):
+        """Test format support checking."""
+        registry = DocumentProcessorRegistry()
+        assert registry.is_supported("PDF")
+        assert not registry.is_supported("UNSUPPORTED")
+
+
+class TestDocumentProcessor:
+    """Test main document processor."""
+
+    def test_initialization(self):
+        """Test processor initialization."""
+        processor = DocumentProcessor()
+        assert processor.registry is not None
+
+    def test_detect_file_format_pdf(self):
+        """Test PDF format detection."""
+        processor = DocumentProcessor()
+        assert processor.detect_file_format("test.pdf") == "PDF"
+        assert processor.detect_file_format("test.pdf", "application/pdf") == "PDF"
+
+    def test_detect_file_format_docx(self):
+        """Test DOCX format detection."""
+        processor = DocumentProcessor()
+        assert processor.detect_file_format("test.docx") == "DOCX"
+
+    def test_detect_file_format_text(self):
+        """Test text format detection."""
+        processor = DocumentProcessor()
+        assert processor.detect_file_format("test.txt") == "TXT"
+        assert processor.detect_file_format("test.md") == "TXT"
+        assert processor.detect_file_format("test.csv") == "TXT"
+
+    def test_detect_file_format_html(self):
+        """Test HTML format detection."""
+        processor = DocumentProcessor()
+        assert processor.detect_file_format("test.html") == "HTML"
+        assert processor.detect_file_format("test.htm") == "HTML"
+
+    def test_detect_file_format_unknown(self):
+        """Test unknown format detection."""
+        processor = DocumentProcessor()
+        assert processor.detect_file_format("test.unknown") == "BINARY"
+
+    def test_extract_text_plain(self):
+        """Test plain text extraction."""
+        processor = DocumentProcessor()
+        content = b"Hello World"
+        result = processor.extract_text(content, "TXT")
+        assert result == "Hello World"
+
+    def test_extract_text_unsupported_format(self):
+        """Test extraction with unsupported format."""
+        processor = DocumentProcessor()
+        content = b"test content"
+
+        with pytest.raises(DocumentProcessorError):
+            processor.extract_text(content, "UNSUPPORTED")
+
+    def test_process_document(self):
+        """Test full document processing."""
+        processor = DocumentProcessor()
+        content = b"Hello World Document"
+        filename = "test.txt"
+
+        text, metadata = processor.process_document(content, filename)
+
+        assert text == "Hello World Document"
+        assert isinstance(metadata, DocumentMetadata)
+        assert metadata.filename == "test.txt"
+        assert metadata.file_format == "TXT"
+        assert metadata.size_bytes == len(content)
+        assert metadata.text_length == len(text)
+        assert metadata.checksum is not None
+        assert metadata.processing_timestamp is not None
+
+    def test_get_supported_formats(self):
+        """Test getting supported formats."""
+        processor = DocumentProcessor()
+        formats = processor.get_supported_formats()
+        assert "PDF" in formats
+        assert "DOCX" in formats
+        assert "TXT" in formats
+        assert "HTML" in formats
+
+    def test_is_format_supported(self):
+        """Test format support checking."""
+        processor = DocumentProcessor()
+        assert processor.is_format_supported("PDF")
+        assert not processor.is_format_supported("UNSUPPORTED")
+Unit tests for DocumentProcessor.
+"""
+
+import pytest
+from unittest.mock import MagicMock, patch, mock_open
+from pathlib import Path
+
+from src.engine.document_processor import (
+    DocumentProcessor,
+    DocumentMetadata,
+    DocumentProcessorError
+)
+
+
+class TestDocumentProcessor:
+    """Test cases for DocumentProcessor."""
+
+    @pytest.fixture
+    def mock_vector_store(self):
+        """Mock vector store for testing."""
+        return MagicMock()
+
+    @pytest.fixture
+    def processor(self, mock_vector_store):
+        """Document processor instance with mocked dependencies."""
+        with patch('src.engine.document_processor.TEXT_EXTRACTION_AVAILABLE', True):
+            return DocumentProcessor(vector_store=mock_vector_store)
+
+    def test_initialization_with_vector_store(self, mock_vector_store):
+        """Test initialization with provided vector store."""
+        processor = DocumentProcessor(vector_store=mock_vector_store)
+        assert processor.vector_store == mock_vector_store
+
+    def test_initialization_without_vector_store(self):
+        """Test initialization without vector store creates new one."""
+        with patch('src.engine.document_processor.LogosVectorStore') as mock_vs_class:
+            mock_vs_instance = MagicMock()
+            mock_vs_class.return_value = mock_vs_instance
+
+            processor = DocumentProcessor()
+
+            mock_vs_class.assert_called_once()
+            assert processor.vector_store == mock_vs_instance
+
+    def test_get_supported_formats(self, processor):
+        """Test getting supported formats."""
+        with patch('src.engine.document_processor.get_supported_formats', return_value=['PDF', 'DOCX']):
+            formats = processor.get_supported_formats()
+            assert formats == ['PDF', 'DOCX']
+
+    def test_is_format_supported_true(self, processor):
+        """Test checking if format is supported (true case)."""
+        with patch('src.engine.document_processor.TEXT_EXTRACTION_AVAILABLE', True), \
+             patch('src.engine.document_processor.is_format_supported', return_value=True):
+            assert processor.is_format_supported('PDF') is True
+
+    def test_is_format_supported_false(self, processor):
+        """Test checking if format is supported (false case)."""
+        with patch('src.engine.document_processor.TEXT_EXTRACTION_AVAILABLE', True), \
+             patch('src.engine.document_processor.is_format_supported', return_value=False):
+            assert processor.is_format_supported('UNSUPPORTED') is False
+
+    def test_calculate_content_hash(self, processor):
+        """Test content hash calculation."""
+        content = b"Hello, World!"
+        expected_hash = "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f"
+        actual_hash = processor._calculate_content_hash(content)
+        assert actual_hash == expected_hash
+
+    def test_detect_file_format_with_extraction(self, processor):
+        """Test file format detection when text extraction is available."""
+        with patch('src.engine.document_processor.TEXT_EXTRACTION_AVAILABLE', True), \
+             patch('src.engine.document_processor.detect_file_format',
+                  return_value=('PDF', 'pdf', 'application/pdf')):
+            format_result, ext, mime = processor._detect_file_format('test.pdf', 'application/pdf')
+            assert format_result == 'PDF'
+            assert ext == 'pdf'
+            assert mime == 'application/pdf'
+
+    def test_detect_file_format_fallback(self, processor):
+        """Test file format detection fallback when extraction not available."""
+        with patch('src.engine.document_processor.TEXT_EXTRACTION_AVAILABLE', False):
+            format_result, ext, mime = processor._detect_file_format('test.pdf', 'application/pdf')
+            assert format_result == 'BINARY'
+            assert ext == 'pdf'
+            assert mime == 'application/pdf'
+
+    def test_chunk_text_empty(self, processor):
+        """Test text chunking with empty text."""
+        chunks = processor._chunk_text("")
+        assert chunks == []
+
+    def test_chunk_text_small(self, processor):
+        """Test text chunking with small text."""
+        text = "This is a short text."
+        chunks = processor._chunk_text(text, chunk_size=1000)
+        assert len(chunks) == 1
+        assert chunks[0] == "This is a short text."
+
+    def test_chunk_text_large(self, processor):
+        """Test text chunking with large text."""
+        # Create text larger than chunk size
+        text = "This is the first sentence. " * 50  # ~1350 characters
+        chunks = processor._chunk_text(text, chunk_size=500, overlap=100)
+
+        assert len(chunks) > 1
+        # Check that chunks overlap
+        for i in range(len(chunks) - 1):
+            # Each chunk should be around 500 chars
+            assert 400 <= len(chunks[i]) <= 600
+
+    def test_chunk_text_with_sentences(self, processor):
+        """Test that chunking prefers sentence boundaries."""
+        text = "This is the first sentence. This is the second sentence. This is the third sentence."
+        chunks = processor._chunk_text(text, chunk_size=30, overlap=5)
+
+        # Should break at sentence boundaries when possible
+        assert len(chunks) >= 2
+
+    @patch('src.engine.document_processor.extract_text_from_file')
+    @patch('src.engine.document_processor.detect_file_format')
+    @patch('src.engine.document_processor.is_format_supported', return_value=True)
+    def test_process_document_success(self, mock_is_supported, mock_detect, mock_extract, processor, mock_vector_store):
+        """Test successful document processing."""
+        # Setup mocks
+        mock_detect.return_value = ('PDF', 'pdf', 'application/pdf')
+        mock_extract.return_value = "Extracted text content from PDF."
+        mock_vector_store.upsert.return_value = None
+
+        # Test data
+        content = b"fake pdf content"
+        filename = "test.pdf"
+
+        # Process document
+        with patch('src.engine.document_processor.TEXT_EXTRACTION_AVAILABLE', True):
+            result = processor.process_document(content, filename)
+
+        # Verify results
+        assert isinstance(result, DocumentMetadata)
+        assert result.filename == filename
+        assert result.file_format == 'PDF'
+        assert result.mimetype == 'application/pdf'
+        assert result.file_size == len(content)
+        assert result.text_length == len("Extracted text content from PDF.")
+        assert result.chunk_count > 0
+
+        # Verify vector store was called
+        mock_vector_store.upsert.assert_called_once()
+
+    @patch('src.engine.document_processor.is_format_supported', return_value=False)
+    def test_process_document_unsupported_format(self, mock_is_supported, processor):
+        """Test processing document with unsupported format."""
+        content = b"unsupported content"
+        filename = "test.unsupported"
+
+        result = processor.process_document(content, filename)
+
+        assert isinstance(result, DocumentMetadata)
+        assert result.filename == filename
+        assert result.text_length == 0
+        assert result.chunk_count == 0
+
+    @patch('src.engine.document_processor.extract_text_from_file', side_effect=Exception("Extraction failed"))
+    @patch('src.engine.document_processor.detect_file_format')
+    @patch('src.engine.document_processor.is_format_supported', return_value=True)
+    def test_process_document_extraction_failure(self, mock_is_supported, mock_detect, mock_extract, processor):
+        """Test document processing when text extraction fails."""
+        mock_detect.return_value = ('PDF', 'pdf', 'application/pdf')
+
+        content = b"pdf content"
+        filename = "test.pdf"
+
+        with patch('src.engine.document_processor.TEXT_EXTRACTION_AVAILABLE', True):
+            with pytest.raises(DocumentProcessorError):
+                processor.process_document(content, filename)
+
+    def test_process_file_from_path_success(self, processor, tmp_path):
+        """Test processing file from path successfully."""
+        # Create a temporary file
+        test_file = tmp_path / "test.txt"
+        test_content = b"This is test content."
+        test_file.write_bytes(test_content)
+
+        with patch.object(processor, 'process_document') as mock_process:
+            mock_process.return_value = DocumentMetadata(filename="test.txt")
+
+            result = processor.process_file_from_path(str(test_file))
+
+            mock_process.assert_called_once()
+            assert isinstance(result, DocumentMetadata)
+
+    def test_process_file_from_path_not_found(self, processor):
+        """Test processing file from non-existent path."""
+        with pytest.raises(FileNotFoundError):
+            processor.process_file_from_path("/nonexistent/file.txt")
+
+    def test_process_file_from_path_directory(self, processor, tmp_path):
+        """Test processing when path is a directory."""
+        with pytest.raises(DocumentProcessorError):
+            processor.process_file_from_path(str(tmp_path))
+
+    def test_guess_mimetype(self, processor):
+        """Test MIME type guessing."""
+        test_cases = [
+            ("document.pdf", "application/pdf"),
+            ("document.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+            ("document.txt", "text/plain"),
+            ("document.unknown", "application/octet-stream")
+        ]
+
+        for filename, expected_mime in test_cases:
+            assert processor._guess_mimetype(filename) == expected_mime
+
+    def test_get_document_info_found(self, processor, mock_vector_store):
+        """Test retrieving document info when found."""
+        content_hash = "testhash123"
+        mock_payload = {
+            "filename": "test.pdf",
+            "file_format": "PDF",
+            "mimetype": "application/pdf",
+            "file_size": 1024,
+            "content_hash": content_hash,
+            "processed_at": "2024-01-01T00:00:00Z",
+            "text_length": 1000,
+            "total_chunks": 5
+        }
+        mock_vector_store.search.return_value = [MagicMock(payload=mock_payload)]
+
+        result = processor.get_document_info(content_hash)
+
+        assert isinstance(result, DocumentMetadata)
+        assert result.filename == "test.pdf"
+        assert result.content_hash == content_hash
+
+    def test_get_document_info_not_found(self, processor, mock_vector_store):
+        """Test retrieving document info when not found."""
+        mock_vector_store.search.return_value = []
+
+        result = processor.get_document_info("nonexistent")
+
+        assert result is None
+
+    def test_list_processed_documents(self, processor, mock_vector_store):
+        """Test listing processed documents."""
+        mock_payloads = [
+            {
+                "filename": "doc1.pdf",
+                "content_hash": "hash1",
+                "file_format": "PDF",
+                "file_size": 1024,
+                "processed_at": "2024-01-01T00:00:00Z",
+                "text_length": 1000,
+                "total_chunks": 3
+            },
+            {
+                "filename": "doc2.pdf",
+                "content_hash": "hash2",
+                "file_format": "PDF",
+                "file_size": 2048,
+                "processed_at": "2024-01-01T01:00:00Z",
+                "text_length": 2000,
+                "total_chunks": 5
+            }
+        ]
+
+        mock_results = [MagicMock(payload=payload) for payload in mock_payloads]
+        mock_vector_store.search.return_value = mock_results
+
+        results = processor.list_processed_documents()
+
+        assert len(results) == 2
+        assert all(isinstance(r, DocumentMetadata) for r in results)
+        assert results[0].filename == "doc1.pdf"
+        assert results[1].filename == "doc2.pdf"

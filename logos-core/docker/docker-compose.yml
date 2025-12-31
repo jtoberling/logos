@@ -1,0 +1,119 @@
+version: '3.8'
+
+# Docker volumes for Portainer/Kubernetes compatibility
+volumes:
+  qdrant_storage:
+    driver: local
+  logos_data:
+    driver: local
+  logos_logs:
+    driver: local
+
+services:
+
+  # Vector database for memory persistence
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: logos-memory
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage:z
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Main Logos MCP server
+  logos-mcp:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: logos-mcp-server
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    ports:
+      - "6334:6334"
+    environment:
+      # Qdrant configuration
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+
+      # Logos configuration
+      - LOGOS_MANIFESTO_PATH=/app/docs/MANIFESTO.md
+      - LOGOS_PERSONALITY_NAME=Logos
+      - LOGOS_CREATOR_NAME=Janos Toberling
+
+      # Data paths (Docker volumes)
+      - DATA_DIR=/app/data
+      - LOGS_DIR=/app/logs
+
+      # MCP server configuration
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=6334
+      - LOG_LEVEL=INFO
+
+      # Default LLM provider (can be overridden)
+      - LLM_PROVIDER=ollama
+      - LLM_MODEL=llama2
+
+      # Optional: Uncomment and configure if using external LLM APIs
+      # - OPENAI_API_KEY=your_key_here
+      # - ANTHROPIC_API_KEY=your_key_here
+      # - GEMINI_API_KEY=your_key_here
+    volumes:
+      # Use Docker volumes only (Portainer/K8s compatible)
+      - logos_data:/app/data:z
+      - logos_logs:/app/logs:z
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 6334)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Local Ollama LLM service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: logos-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama:z
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    profiles:
+      - llm  # Only start with --profile llm
+
+  # Optional: LMStudio local LLM service
+  lmstudio:
+    image: ghcr.io/lmstudio-ai/lmstudio:latest
+    container_name: logos-lmstudio
+    ports:
+      - "1234:1234"
+    volumes:
+      - lmstudio_data:/app/data:z
+    environment:
+      - LMSTUDIO_PORT=1234
+    restart: unless-stopped
+    profiles:
+      - llm  # Only start with --profile llm
+
+# Additional volumes for optional services
+volumes:
+  ollama_data:
+    driver: local
+  lmstudio_data:
+    driver: local
+
+  

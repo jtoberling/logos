@@ -1,0 +1,11 @@
+This is a sample text document for testing the Logos text extraction system.
+
+It contains multiple lines and paragraphs to test various text processing capabilities.
+
+Key features tested:
+- Basic text extraction
+- Paragraph detection
+- Word counting
+- Encoding handling
+
+The document should be processed correctly by the document processor.
