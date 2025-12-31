@@ -13,8 +13,8 @@ try:
     from mcp import tool
 except ImportError:
     # Mock for testing when MCP not available
-    def tool(*args, **kwargs):
-        def decorator(func):
+    def tool(*args, **kwargs) -> callable:
+        def decorator(func) -> callable:
             return func
         return decorator
 
@@ -27,8 +27,20 @@ except ImportError:
 _vector_store = None
 _prompt_manager = None
 
+# Version information
+try:
+    import src as logos
+except ImportError:
+    # Fallback for testing
+    class MockLogos:
+        __version__ = "1.0.0"
+        __author__ = "Janos Toberling"
+        __description__ = "Digital memory engine and personality framework"
+        __url__ = "https://github.com/janos/logos"
+    logos = MockLogos()
 
-def initialize_tools(vector_store, prompt_manager):
+
+def initialize_tools(vector_store, prompt_manager) -> None:
     """Initialize tools with required dependencies."""
     global _vector_store, _prompt_manager
     _vector_store = vector_store
@@ -222,4 +234,35 @@ def get_collection_stats() -> str:
         return json.dumps({
             "error": f"Failed to get collection stats: {str(e)}",
             "collections": {}
+        })
+
+
+@tool()
+def get_version() -> str:
+    """
+    Get Logos version and system information.
+
+    Returns:
+        JSON string with version information including version number,
+        author, description, and system details.
+    """
+    try:
+        version_info = {
+            "version": logos.__version__,
+            "author": logos.__author__,
+            "description": logos.__description__,
+            "url": logos.__url__,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "system": {
+                "name": "Logos",
+                "type": "Digital Memory Engine",
+                "architecture": "MCP Server + Document Processing"
+            }
+        }
+        return json.dumps(version_info, indent=2)
+
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to get version information: {str(e)}",
+            "version": "unknown"
         })

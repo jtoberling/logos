@@ -6,6 +6,9 @@ This module provides text embedding functionality for the vector store.
 
 import numpy as np
 from typing import List, Union
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
 
 try:
     from fastembed import TextEmbedding
@@ -14,9 +17,9 @@ except ImportError:
     FASTEMBED_AVAILABLE = False
     # Mock for testing
     class TextEmbedding:
-        def __init__(self, model_name=None):
+        def __init__(self, model_name=None) -> None:
             pass
-        def embed(self, texts):
+        def embed(self, texts) -> list:
             # Return mock embeddings
             return [np.random.rand(384).astype(np.float32) for _ in texts]
 
@@ -28,7 +31,7 @@ class LogosEmbedder:
     Uses FastEmbed for local text vectorization.
     """
 
-    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5"):
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5") -> None:
         """
         Initialize the embedder.
 
@@ -40,15 +43,15 @@ class LogosEmbedder:
         if FASTEMBED_AVAILABLE:
             try:
                 self.model = TextEmbedding(model_name=model_name)
-                print(f"LogosEmbedder: Model {model_name} loaded successfully.")
+                logger.info(f"Model {model_name} loaded successfully.")
             except Exception as e:
-                print(f"LogosEmbedder: Failed to initialize model. Error: {e}")
+                logger.warning(f"Failed to initialize model {model_name}. Error: {e}")
                 # Fallback to mock
                 self.model = TextEmbedding()
         else:
             # Use mock for testing
             self.model = TextEmbedding()
-            print(f"LogosEmbedder: Using mock embeddings (FastEmbed not available).")
+            logger.info("Using mock embeddings (FastEmbed not available).")
 
     def embed_text(self, text: Union[str, List[str]]) -> List[np.ndarray]:
         """

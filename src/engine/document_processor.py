@@ -28,7 +28,7 @@ class BaseTextExtractor(ABC):
     Simplified version focused on Logos requirements.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(self.__class__.__name__)
 
     @abstractmethod
@@ -78,7 +78,7 @@ class PlainTextExtractor(BaseTextExtractor):
             text = content.decode('utf-8', errors='replace')
             return self.clean_text(text)
         except Exception as e:
-            raise DocumentProcessorError(f"Plain text extraction failed: {str(e)}")
+            raise DocumentProcessorError(f"Plain text extraction failed: {str(e)}") from e
 
     def get_supported_formats(self) -> List[str]:
         return ["TXT", "CSV", "MD"]
@@ -87,7 +87,7 @@ class PlainTextExtractor(BaseTextExtractor):
 class PDFTextExtractor(BaseTextExtractor):
     """Text extractor for PDF files."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._pdfplumber_available = False
         self._pypdf_available = False
@@ -123,7 +123,7 @@ class PDFTextExtractor(BaseTextExtractor):
                         text += page_text + "\n"
                 return self.clean_text(text)
         except Exception as e:
-            raise DocumentProcessorError(f"pdfplumber extraction failed: {str(e)}")
+            raise DocumentProcessorError(f"pdfplumber extraction failed: {str(e)}") from e
 
     def _extract_with_pypdf(self, content: bytes) -> str:
         """Extract text using pypdf."""
@@ -137,7 +137,7 @@ class PDFTextExtractor(BaseTextExtractor):
                     text += page_text + "\n"
             return self.clean_text(text)
         except Exception as e:
-            raise DocumentProcessorError(f"pypdf extraction failed: {str(e)}")
+            raise DocumentProcessorError(f"pypdf extraction failed: {str(e)}") from e
 
     def get_supported_formats(self) -> List[str]:
         return ["PDF"]
@@ -146,7 +146,7 @@ class PDFTextExtractor(BaseTextExtractor):
 class DOCXTextExtractor(BaseTextExtractor):
     """Text extractor for DOCX files."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._docx_available = False
         try:
@@ -180,7 +180,7 @@ class DOCXTextExtractor(BaseTextExtractor):
 class HTMLTextExtractor(BaseTextExtractor):
     """Text extractor for HTML files."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._bs4_available = False
         try:
@@ -216,11 +216,11 @@ class HTMLTextExtractor(BaseTextExtractor):
 class DocumentProcessorRegistry:
     """Registry for managing document processors."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._extractors: Dict[str, BaseTextExtractor] = {}
         self._register_extractors()
 
-    def _register_extractors(self):
+    def _register_extractors(self) -> None:
         """Register all available extractors."""
         extractors = [
             (PlainTextExtractor(), ["TXT", "CSV", "MD"]),
@@ -270,7 +270,7 @@ class DocumentProcessor:
     for building knowledge bases from various file types.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.registry = DocumentProcessorRegistry()
         logger.info(f"Document processor initialized with formats: {', '.join(sorted(self.registry.get_supported_formats()))}")
 
@@ -348,7 +348,7 @@ class DocumentProcessor:
             return text
         except Exception as e:
             logger.error(f"Text extraction failed for {file_format}: {str(e)}")
-            raise DocumentProcessorError(f"Failed to extract text from {file_format}: {str(e)}")
+            raise DocumentProcessorError(f"Failed to extract text from {file_format}: {str(e)}") from e
 
     def process_document(self, content: bytes, filename: str, mimetype: Optional[str] = None) -> tuple[str, DocumentMetadata]:
         """

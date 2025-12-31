@@ -8,6 +8,9 @@ supporting both personality memories (logos_essence) and project knowledge
 
 import uuid
 from typing import List, Dict, Optional, Any
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
 
 try:
     from qdrant_client import QdrantClient
@@ -46,7 +49,7 @@ class LogosVectorStore:
         "canon": "Core documents and constitution"
     }
 
-    def __init__(self, host: str = "qdrant", port: int = 6333, embedder: Optional[LogosEmbedder] = None):
+    def __init__(self, host: str = "qdrant", port: int = 6333, embedder: Optional[LogosEmbedder] = None) -> None:
         """
         Initialize the vector store connection.
 
@@ -72,7 +75,7 @@ class LogosVectorStore:
 
         for collection_name in self.COLLECTIONS.keys():
             if collection_name not in existing_names:
-                print(f"LogosVectorStore: Creating collection '{collection_name}'...")
+                logger.info(f"Creating collection '{collection_name}'...")
                 self.client.create_collection(
                     collection_name=collection_name,
                     vectors_config=models.VectorParams(

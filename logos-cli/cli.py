@@ -180,5 +180,19 @@ def constitution(ctx):
         sys.exit(1)
 
 
+@cli.command()
+@click.pass_context
+def version(ctx):
+    """Get Logos version and system information."""
+    logos_cli = ctx.obj['cli']
+
+    try:
+        version_info = logos_cli.mcp_client.get_version()
+        click.echo(json.dumps(version_info, indent=2, ensure_ascii=False))
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+
 if __name__ == '__main__':
     cli()

@@ -12,8 +12,8 @@ try:
     from mcp import tool
 except ImportError:
     # Mock for testing when MCP not available
-    def tool(*args, **kwargs):
-        def decorator(func):
+    def tool(*args, **kwargs) -> callable:
+        def decorator(func) -> callable:
             return func
         return decorator
 

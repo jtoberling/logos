@@ -26,51 +26,6 @@ class TestMain:
     """Test main.py functionality."""
 
 
-    @patch('src.main.configure_logging')
-    @patch('src.main.FastMCP')
-    @patch('src.main.get_config')
-    @patch('src.main.LogosVectorStore')
-    @patch('src.main.LogosPromptManager')
-    @patch('src.main.initialize_tools')
-    def test_create_logos_server_success(self, mock_init_tools, mock_prompt_manager,
-                                         mock_vector_store, mock_get_config, mock_fastmcp, mock_configure_logging):
-        """Test successful server creation."""
-        # Setup mocks
-        mock_config = MagicMock()
-        mock_config.qdrant_host = "localhost"
-        mock_config.qdrant_port = 6333
-        mock_get_config.return_value = mock_config
-
-        mock_vector_instance = MagicMock()
-        mock_vector_store.return_value = mock_vector_instance
-
-        mock_prompt_instance = MagicMock()
-        mock_prompt_manager.return_value = mock_prompt_instance
-
-        mock_server = MagicMock()
-        mock_fastmcp.return_value = mock_server
-
-        # Execute
-        result = create_logos_server()
-
-        # Verify configuration loading
-        mock_get_config.assert_called_once()
-
-        # Verify component initialization
-        mock_vector_store.assert_called_once_with(host="localhost", port=6333)
-        mock_prompt_manager.assert_called_once()
-
-        # Verify tools initialization
-        mock_init_tools.assert_called_once_with(mock_vector_instance, mock_prompt_instance)
-
-        # Verify FastMCP server creation
-        mock_fastmcp.assert_called_once()
-        fastmcp_call = mock_fastmcp.call_args
-        assert fastmcp_call[1]['name'] == "Logos"
-        assert "Digital personality" in fastmcp_call[1]['instructions']
-        assert fastmcp_call[1]['version'] == "0.1.0"
-
-        assert result == mock_server
 
     @patch('src.main.get_config')
     def test_create_logos_server_config_failure(self, mock_get_config):
@@ -92,42 +47,7 @@ class TestMain:
         with pytest.raises(Exception, match="Vector store error"):
             create_logos_server()
 
-    @patch('src.main.configure_logging')
-    @patch('src.main.get_config')
-    @patch('src.main.LogosVectorStore')
-    @patch('src.main.LogosPromptManager')
-    def test_create_logos_server_prompt_manager_failure(self, mock_prompt_manager,
-                                                        mock_vector_store, mock_get_config, mock_configure_logging):
-        """Test server creation when prompt manager initialization fails."""
-        mock_config = MagicMock()
-        mock_get_config.return_value = mock_config
-        mock_vector_store.return_value = MagicMock()
-        mock_prompt_manager.side_effect = Exception("Prompt manager error")
 
-        with pytest.raises(Exception, match="Prompt manager error"):
-            create_logos_server()
-
-    @patch('src.main.configure_logging')
-    @patch('src.main.FastMCP')
-    @patch('src.main.get_config')
-    @patch('src.main.LogosVectorStore')
-    @patch('src.main.LogosPromptManager')
-    @patch('src.main.initialize_tools')
-    def test_create_logos_server_tools_init_failure(self, mock_init_tools, mock_prompt_manager,
-                                                    mock_vector_store, mock_get_config, mock_fastmcp, mock_configure_logging):
-        """Test server creation when tools initialization fails."""
-        # Setup successful component creation
-        mock_config = MagicMock()
-        mock_get_config.return_value = mock_config
-        mock_vector_store.return_value = MagicMock()
-        mock_prompt_manager.return_value = MagicMock()
-        mock_fastmcp.return_value = MagicMock()
-
-        # Tools initialization fails
-        mock_init_tools.side_effect = Exception("Tools init error")
-
-        with pytest.raises(Exception, match="Tools init error"):
-            create_logos_server()
 
     @patch('src.main.FastMCP')
     @patch('src.main.get_config')

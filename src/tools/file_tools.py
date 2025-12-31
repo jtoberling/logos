@@ -13,24 +13,24 @@ try:
     from mcp import tool
 except ImportError:
     # Mock for testing when MCP not available
-    def tool(*args, **kwargs):
-        def decorator(func):
+    def tool(*args, **kwargs) -> callable:
+        def decorator(func) -> callable:
             return func
         return decorator
 
 # Conditional import for DocumentProcessor and LogosVectorStore
 try:
-    from src.engine.document_processor import DocumentProcessor, DocumentProcessorError, DocumentMetadata
-    from src.engine.vector_store import LogosVectorStore
-    from src.logging_config import get_logger
+    from ..engine.document_processor import DocumentProcessor, DocumentProcessorError, DocumentMetadata
+    from ..engine.vector_store import LogosVectorStore
+    from ..logging_config import get_logger
 except ImportError:
     # Fallback for when running from tools directory or tests
     import sys
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-    from src.engine.document_processor import DocumentProcessor, DocumentProcessorError, DocumentMetadata
-    from src.engine.vector_store import LogosVectorStore
-    from src.logging_config import get_logger
+    from ..engine.document_processor import DocumentProcessor, DocumentProcessorError, DocumentMetadata
+    from ..engine.vector_store import LogosVectorStore
+    from ..logging_config import get_logger
 
 logger = get_logger(__name__)
 

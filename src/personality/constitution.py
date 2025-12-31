@@ -52,7 +52,7 @@ class LogosConstitution:
         "format": "Well-organized, sectioned responses when appropriate"
     }
 
-    def __init__(self, manifesto_path: Optional[str] = None):
+    def __init__(self, manifesto_path: Optional[str] = None) -> None:
         """
         Initialize the constitution.
 

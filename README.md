@@ -26,8 +26,18 @@ docker-compose up -d qdrant logos-mcp
 - **Sophia Methodology**: "Letters for Future Self" personality development
 - **Docker Native**: Portainer/K8s ready with volume persistence
 - **Multi-LLM Support**: Works with OpenAI, Anthropic, Ollama, LMStudio, Gemini
+- **Version Reporting**: Built-in version API and CLI commands
 
 ### 📖 [Full Documentation](#-logos-the-architecture-of-reason)
+
+**Quick Version Check:**
+```bash
+# Via MCP API
+curl http://localhost:6334/tools/get_version
+
+# Via CLI (when installed)
+logos-cli version
+```
 
 ---
 
@@ -152,6 +162,11 @@ cd logos-cli
 pip install -e .
 ```
 
+**Check Logos version:**
+```bash
+logos-cli version
+```
+
 **Start an interactive session:**
 
 ```bash
@@ -183,6 +198,7 @@ Logos exposes a comprehensive set of MCP tools for memory and knowledge manageme
 - **`get_constitution`** - Retrieve Logos' personality constitution
 - **`get_memory_context`** - Search specific memory collections
 - **`get_collection_stats`** - Collection statistics and info
+- **`get_version`** - Get Logos version and system information
 
 ### 📁 File Management
 
@@ -345,6 +361,13 @@ cd logos
 
 # Install development dependencies
 pip install -r requirements-dev.txt
+
+# Run code quality checks
+semgrep --config .semgrep.yml src/  # Security and best practices
+black --check src/                   # Code formatting
+isort --check-only src/             # Import sorting
+flake8 src/                         # Linting
+mypy src/                           # Type checking
 
 # Run tests
 python -m pytest --cov=src

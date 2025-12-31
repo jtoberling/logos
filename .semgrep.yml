@@ -1,0 +1,480 @@
+# Semgrep configuration for Logos project
+# Enhanced custom rules aligned with KISS principles and code quality standards
+
+rules:
+  # Security: Dangerous operations that should be flagged
+  - id: dangerous-eval
+    languages: [python]
+    patterns:
+      - pattern: eval(...)
+    message: "Dangerous eval() usage detected - avoid dynamic code execution"
+    severity: WARNING
+
+  - id: dangerous-exec
+    languages: [python]
+    patterns:
+      - pattern: exec(...)
+    message: "Dangerous exec() usage detected - avoid dynamic code execution"
+    severity: WARNING
+
+  - id: dangerous-pickle-load
+    languages: [python]
+    patterns:
+      - pattern: pickle.load(...)
+    message: "Dangerous pickle.load() usage detected - consider safer alternatives"
+    severity: WARNING
+
+  # Code Quality: KISS principle violations
+  - id: complex-comprehension
+    languages: [python]
+    patterns:
+      - pattern: |
+          [ $X for $Y in $Z if $A and $B and $C ]
+    message: "Complex list comprehension with multiple conditions - consider breaking it down (KISS principle)"
+    severity: INFO
+
+  - id: complex-dict-comprehension
+    languages: [python]
+    patterns:
+      - pattern: |
+          { $K: $V for $ITEM in $ITERABLE if $A and $B and $C }
+    message: "Complex dict comprehension with multiple conditions - consider breaking it down (KISS principle)"
+    severity: INFO
+
+  # Best Practices: Error handling in exception handlers
+  - id: exception-without-cause
+    languages: [python]
+    patterns:
+      - pattern: |
+          try:
+              $CODE
+          except $EXCEPTION_VAR as $E:
+              $OTHER_CODE
+              raise $NEW_EXCEPTION(...)
+      - pattern-not: |
+          try:
+              $CODE
+          except $EXCEPTION_VAR as $E:
+              $OTHER_CODE
+              raise $NEW_EXCEPTION(...) from $E
+    message: "Exception raised in handler without chaining from original exception - consider adding 'from e' for better traceback"
+    severity: INFO
+
+  # Type hints: Encourage proper typing (Logos requirement)
+  - id: missing-return-type
+    languages: [python]
+    patterns:
+      - pattern: |
+          def $FUNC(...):
+              $BODY
+      - pattern-not: |
+          def $FUNC(...) -> $RETURNTYPE:
+              $BODY
+    message: "Function without return type annotation - all functions should have type hints"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # KISS Principle: Function complexity limits
+  - id: too-many-parameters
+    languages: [python]
+    patterns:
+      - pattern: |
+          def $FUNC($P1, $P2, $P3, $P4, $P5, $P6, $P7, ...):
+              $BODY
+    message: "Function has too many parameters (7+) - consider using a dataclass or config object (KISS principle)"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # KISS Principle: Long functions
+  - id: function-too-long
+    languages: [python]
+    patterns:
+      - pattern: |
+          def $FUNC(...):
+              $LINE1
+              $LINE2
+              $LINE3
+              $LINE4
+              $LINE5
+              $LINE6
+              $LINE7
+              $LINE8
+              $LINE9
+              $LINE10
+              $LINE11
+              $LINE12
+              $LINE13
+              $LINE14
+              $LINE15
+              $LINE16
+              $LINE17
+              $LINE18
+              $LINE19
+              $LINE20
+              $LINE21
+              $LINE22
+              $LINE23
+              $LINE24
+              $LINE25
+              $LINE26
+              $LINE27
+              $LINE28
+              $LINE29
+              $LINE30
+              $REST
+    message: "Function is too long (30+ lines) - consider breaking into smaller functions (KISS principle)"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Documentation: Missing docstrings for functions (DISABLED - unreliable detection)
+  # - id: missing-docstring
+  #   languages: [python]
+  #   patterns:
+  #     - pattern: |
+  #         def $FUNC(...):
+  #           $BODY
+  #     - pattern-not: |
+  #         def $FUNC(...):
+  #           """$DOCSTRING"""
+  #           $BODY
+  #   message: "Function without docstring - all functions should be documented"
+  #   severity: INFO
+  #   paths:
+  #     include:
+  #       - "**/src/**/*.py"
+
+  # Code Quality: Hard-coded strings that should be constants
+  - id: hardcoded-string-constant
+    languages: [python]
+    patterns:
+      - pattern-regex: '[A-Z][A-Z_]+.*=.*"[^"]{10,}"'
+      - pattern-regex: "[A-Z][A-Z_]+.*=.*'[^']{10,}'"
+    message: "Consider defining long string literals as constants for better maintainability"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Code Quality: Magic numbers
+  - id: magic-number
+    languages: [python]
+    patterns:
+      - pattern-regex: '[^a-zA-Z_][0-9]{2,}[^0-9.]'
+      - pattern-not-regex: '[^a-zA-Z_][01][^0-9.]'  # Allow 0, 1
+      - pattern-not-regex: '[^a-zA-Z_][0123456789]{1,2}[^0-9.]'  # Allow small numbers
+      - pattern-not-regex: 'version.*=.*[0-9]+'  # Allow version numbers
+      - pattern-not-regex: 'port.*=.*[0-9]+'  # Allow port numbers
+    message: "Magic number detected - consider defining as a named constant"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Best Practices: Deep nesting
+  - id: deeply-nested-if
+    languages: [python]
+    patterns:
+      - pattern: |
+          if $COND1:
+              if $COND2:
+                  if $COND3:
+                      $BODY
+    message: "Deeply nested if statements (3+ levels) - consider early returns or function extraction (KISS principle)"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Best Practices: Async function naming
+  - id: async-function-naming
+    languages: [python]
+    patterns:
+      - pattern: |
+          async def $FUNC(...):
+              $BODY
+      - pattern-not: |
+          async def $FUNC(...):
+              """$DOCSTRING"""
+              $BODY
+    message: "Async function should have clear naming indicating asynchronous behavior"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Best Practices: Proper logging levels
+  - id: incorrect-log-level
+    languages: [python]
+    patterns:
+      - pattern: logging.critical($MSG)
+      - pattern-not: logging.critical(".*error.*")
+      - pattern-not: logging.critical(".*fail.*")
+      - pattern-not: logging.critical(".*critical.*")
+    message: "Consider if CRITICAL log level is appropriate - usually reserved for system failures"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Code Quality: Unused imports (DISABLED - use dedicated tools like autoflake)
+  # - id: unused-import
+  #   languages: [python]
+  #   patterns:
+  #     - pattern: |
+  #         import $MODULE
+  #         # No usage of $MODULE in the file
+  #   message: "Potentially unused import - clean up imports for better maintainability"
+  #   severity: INFO
+  #   paths:
+  #     include:
+  #       - "**/src/**/*.py"
+
+  # Architecture: Direct database calls in business logic (excluding data access layer)
+  - id: direct-db-call-in-logic
+    languages: [python]
+    patterns:
+      - pattern: qdrant_client.$METHOD(...)
+      - pattern-not: |
+          class VectorStore:
+              def $METHOD(...):
+                  qdrant_client.$METHOD(...)
+      - pattern-not: |
+          class LogosVectorStore:
+              def $METHOD(...):
+                  qdrant_client.$METHOD(...)
+      - pattern-not: QdrantClient(...)  # Allow constructor calls in data access layer
+    message: "Direct database call outside of data access layer - consider using repository pattern"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Security: Environment variable access without validation
+  - id: unsafe-env-access
+    languages: [python]
+    patterns:
+      - pattern: os.environ[...]
+      - pattern-not: os.environ.get(...)
+      - pattern-not: os.getenv(...)
+    message: "Unsafe environment variable access - use .get() or getenv() with defaults"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Import Organization: Relative imports should be used within packages
+  - id: avoid-absolute-imports
+    languages: [python]
+    patterns:
+      - pattern: |
+          from src.$MODULE import $ITEM
+    message: "Use relative imports within packages instead of absolute imports"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+      exclude:
+        - "**/src/tools/memory_tools.py"  # Allow fallback imports here
+
+  # Security: Hardcoded secrets patterns
+  - id: hardcoded-secret
+    languages: [python]
+    patterns:
+      - pattern: $SECRET_VAR = "$LONG_STRING"
+      - pattern-not: $TEST_VAR = "$TEST_STRING"
+      - pattern-not: $EXAMPLE_VAR = "$EXAMPLE_STRING"
+    message: "Potential hardcoded secret detected - use environment variables or config"
+    severity: ERROR
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Performance: Inefficient list operations
+  - id: inefficient-list-ops
+    languages: [python]
+    patterns:
+      - pattern: |
+          $LIST = []
+          for $ITEM in $ITERABLE:
+              $LIST.append($ITEM)
+    message: "Inefficient list creation - use list comprehension or [*iterable]"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Performance: String concatenation in loops
+  - id: string-concat-in-loop
+    languages: [python]
+    patterns:
+      - pattern: |
+          $STR = ""
+          for $ITEM in $ITERABLE:
+              $STR += $EXPR
+    message: "Inefficient string concatenation in loop - use join() instead"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Best Practices: Boolean checks
+  - id: unnecessary-equality
+    languages: [python]
+    patterns:
+      - pattern: |
+          if $VAR == True:
+              $BODY
+      - pattern: |
+          if $VAR == False:
+              $BODY
+    message: "Unnecessary comparison with boolean literal - use 'if var:' or 'if not var:'"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Best Practices: Dict key access (DISABLED - too many false positives)
+  # - id: unsafe-dict-access
+  #   languages: [python]
+  #   patterns:
+  #     - pattern: $DICT[...]
+  #     - pattern-not: $DICT.get(...)
+  #     - pattern-not: |
+  #         try:
+  #             $DICT[...]
+  #         except KeyError:
+  #             $FALLBACK
+  #   message: "Dictionary access without error handling - consider .get() or try/except"
+  #   severity: INFO
+  #   paths:
+  #     include:
+  #       - "**/src/**/*.py"
+
+  # Code Quality: Unused variables (DISABLED - too noisy)
+  # - id: unused-assignment
+  #   languages: [python]
+  #   patterns:
+  #     - pattern: |
+  #         $VAR = $EXPR
+  #         # No subsequent use of $VAR
+  #   message: "Variable assigned but not used - remove or prefix with underscore if intentional"
+  #   severity: INFO
+  #   paths:
+  #     include:
+  #       - "**/src/**/*.py"
+
+  # Testing: Assert statements in production code
+  - id: assert-in-production
+    languages: [python]
+    patterns:
+      - pattern: assert $EXPR
+      - pattern-not: |
+          if __name__ == "__main__":
+              assert $EXPR
+    message: "Assert statements in production code - use proper error handling instead"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Code Quality: Large classes (simplified check)
+  - id: many-methods-class
+    languages: [python]
+    patterns:
+      - pattern: |
+          class $CLASS:
+              def method1(self): ...
+              def method2(self): ...
+              def method3(self): ...
+              def method4(self): ...
+              def method5(self): ...
+              def method6(self): ...
+              def method7(self): ...
+              def method8(self): ...
+              def method9(self): ...
+              def method10(self): ...
+              def method11(self): ...
+              def method12(self): ...
+              def method13(self): ...
+              def method14(self): ...
+              def method15(self): ...
+    message: "Class with many methods (15+) - consider if it has single responsibility"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+
+  # Performance: Multiple calls to same method
+  - id: repeated-method-calls
+    languages: [python]
+    patterns:
+      - pattern: |
+          $OBJ.method()
+          $OBJ.method()
+          $OBJ.method()
+    message: "Multiple calls to same method - consider caching result"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Best Practices: Context manager usage
+  - id: missing-context-manager
+    languages: [python]
+    patterns:
+      - pattern: |
+          $FILE = open(...)
+          $USE_FILE
+          $FILE.close()
+      - pattern-not: |
+          with open(...) as $FILE:
+              $USE_FILE
+    message: "File opened without context manager - use 'with' statement"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Code Quality: Empty except blocks
+  - id: empty-except
+    languages: [python]
+    patterns:
+      - pattern: |
+          try:
+              $CODE
+          except:
+              pass
+      - pattern-not: |
+          try:
+              $CODE
+          except $SPECIFIC_EXCEPTION:
+              pass
+    message: "Empty except block catches all exceptions - specify exception types"
+    severity: WARNING
+    paths:
+      include:
+        - "**/src/**/*.py"
+
+  # Best Practices: Print statements in production
+  - id: print-in-production
+    languages: [python]
+    patterns:
+      - pattern: print(...)
+      - pattern-not: |
+          if __name__ == "__main__":
+              print(...)
+    message: "Print statements in production code - use proper logging instead"
+    severity: INFO
+    paths:
+      include:
+        - "**/src/**/*.py"
+      exclude:
+        - "**/src/main.py"  # Allow import error prints
+        - "**/src/personality/prompt_manager.py"  # Allow demo prints

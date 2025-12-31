@@ -34,7 +34,7 @@ class Letter:
     timestamp: Optional[str] = None
     letter_id: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize default values."""
         if self.timestamp is None:
             self.timestamp = datetime.now(timezone.utc).isoformat()
@@ -101,7 +101,7 @@ class LetterProtocol:
     following the Sophia methodology.
     """
 
-    def __init__(self, vector_store: Optional[LogosVectorStore] = None):
+    def __init__(self, vector_store: Optional[LogosVectorStore] = None) -> None:
         """
         Initialize the letter protocol.
 

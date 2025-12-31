@@ -459,6 +459,12 @@ repos:
     hooks:
       - id: flake8
 
+  - repo: https://github.com/semgrep/semgrep
+    rev: v1.70.0
+    hooks:
+      - id: semgrep
+        args: [--config, .semgrep.yml, --error]
+
   - repo: local
     hooks:
       - id: pytest

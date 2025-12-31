@@ -105,7 +105,8 @@ def create_logos_server(config_path: Optional[str] = None) -> FastMCP:
             query_logos,
             get_constitution,
             get_memory_context,
-            get_collection_stats
+            get_collection_stats,
+            get_version
         )
 
         # Import and register file management tools
@@ -140,7 +141,7 @@ def create_logos_server(config_path: Optional[str] = None) -> FastMCP:
     return server
 
 
-def main():
+def main() -> None:
     """Main entry point for the Logos MCP server."""
     try:
         # Create server

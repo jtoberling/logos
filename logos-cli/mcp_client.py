@@ -122,6 +122,23 @@ class LogosMCPClient:
         except json.JSONDecodeError:
             return {"error": "Invalid response format from Logos server"}
 
+    def get_version(self) -> Dict[str, Any]:
+        """
+        Get Logos version and system information.
+
+        Returns:
+            Dictionary with version information
+        """
+        result = self._call_tool("get_version")
+
+        if "error" in result:
+            return result
+
+        try:
+            return json.loads(result)
+        except json.JSONDecodeError:
+            return {"error": "Invalid response format from Logos server"}
+
     def __del__(self):
         """Clean up HTTP client."""
         if hasattr(self, 'client'):

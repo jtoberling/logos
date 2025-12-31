@@ -2,13 +2,13 @@ from typing import List, Optional
 
 # Import the constitution loader
 try:
-    from src.personality.constitution import LogosConstitution
+    from .constitution import LogosConstitution
 except ImportError:
     # Fallback for when running from logos-core directory
     import sys
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../../src'))
-    from src.personality.constitution import LogosConstitution
+    from .constitution import LogosConstitution
 
 
 class LogosPromptManager:
@@ -19,7 +19,7 @@ class LogosPromptManager:
     to create comprehensive system prompts following the Sophia methodology.
     """
 
-    def __init__(self, manifesto_path: Optional[str] = None):
+    def __init__(self, manifesto_path: Optional[str] = None) -> None:
         """
         Initialize the prompt manager with constitution loader.
 
@@ -137,6 +137,7 @@ if __name__ == "__main__":
         personality_context=personality_memories,
         technical_context=technical_facts
     )
+    # Demo output
     print("=== LOGOS SYSTEM PROMPT ===")
     print(full_prompt)
     

@@ -29,7 +29,7 @@ class LogosLogger:
     - Environment-based configuration
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None) -> None:
         """
         Initialize logging configuration.
 

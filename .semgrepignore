@@ -1,0 +1,28 @@
+# Test directories
+test/
+htmlcov/
+
+# Build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+
+# Logs
+logs/
+*.log
+
+# Docker
+logos-core/docker/
+
+# Documentation (mostly markdown)
+docs/
+
+# CLI tool
+logos-cli/
+
+# Configuration examples
+env-example.txt

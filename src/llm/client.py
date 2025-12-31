@@ -19,14 +19,14 @@ except ImportError:
         class Client:
             pass
         @staticmethod
-        def post(*args, **kwargs):
+        def post(*args, **kwargs) -> None:
             raise ImportError("httpx not available")
 
 
 class LLMClient(ABC):
     """Abstract base class for LLM clients."""
 
-    def __init__(self, model: str = "gpt-3.5-turbo", **kwargs):
+    def __init__(self, model: str = "gpt-3.5-turbo", **kwargs) -> None:
         self.model = model
 
     @abstractmethod
@@ -44,7 +44,7 @@ class LLMClient(ABC):
 class OpenAIClient(LLMClient):
     """OpenAI API client."""
 
-    def __init__(self, model: str = "gpt-3.5-turbo", api_key: Optional[str] = None, **kwargs):
+    def __init__(self, model: str = "gpt-3.5-turbo", api_key: Optional[str] = None, **kwargs) -> None:
         super().__init__(model, **kwargs)
         try:
             import openai
@@ -77,7 +77,7 @@ class OpenAIClient(LLMClient):
 class AnthropicClient(LLMClient):
     """Anthropic Claude API client."""
 
-    def __init__(self, model: str = "claude-3-sonnet-20240229", api_key: Optional[str] = None, **kwargs):
+    def __init__(self, model: str = "claude-3-sonnet-20240229", api_key: Optional[str] = None, **kwargs) -> None:
         super().__init__(model, **kwargs)
         try:
             import anthropic
@@ -106,7 +106,7 @@ class AnthropicClient(LLMClient):
 class OllamaClient(LLMClient):
     """Ollama local LLM client."""
 
-    def __init__(self, model: str = "llama2", base_url: str = "http://localhost:11434", **kwargs):
+    def __init__(self, model: str = "llama2", base_url: str = "http://localhost:11434", **kwargs) -> None:
         super().__init__(model, **kwargs)
         if not HTTPX_AVAILABLE:
             raise ImportError("httpx package not installed. Install with: pip install httpx")
@@ -142,7 +142,7 @@ class OllamaClient(LLMClient):
 class LMStudioClient(LLMClient):
     """LMStudio local LLM client."""
 
-    def __init__(self, model: str = "local-model", base_url: str = "http://localhost:1234/v1", **kwargs):
+    def __init__(self, model: str = "local-model", base_url: str = "http://localhost:1234/v1", **kwargs) -> None:
         super().__init__(model, **kwargs)
         if not HTTPX_AVAILABLE:
             raise ImportError("httpx package not installed. Install with: pip install httpx")
@@ -182,7 +182,7 @@ class LMStudioClient(LLMClient):
 class GeminiClient(LLMClient):
     """Google Gemini API client."""
 
-    def __init__(self, model: str = "gemini-pro", api_key: Optional[str] = None, **kwargs):
+    def __init__(self, model: str = "gemini-pro", api_key: Optional[str] = None, **kwargs) -> None:
         super().__init__(model, **kwargs)
         try:
             import google.genai as genai

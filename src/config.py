@@ -61,7 +61,7 @@ class LogosConfig:
     # Logging
     log_level: str = "INFO"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate and process configuration after initialization."""
         # Build Qdrant URL if not provided
         if not self.qdrant_url:
@@ -81,7 +81,7 @@ class LogosConfig:
         # Validate paths exist or can be created
         self._validate_paths()
 
-    def _validate_paths(self):
+    def _validate_paths(self) -> None:
         """Validate and create necessary directories."""
         data_path = Path(self.data_dir)
         logs_path = Path(self.logs_dir)
@@ -254,7 +254,7 @@ def validate_config(config: LogosConfig) -> bool:
         try:
             data_path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            raise ValueError(f"Cannot create data directory {config.data_dir}: {e}")
+            raise ValueError(f"Cannot create data directory {config.data_dir}: {e}") from e
 
     # Check manifesto file exists
     manifesto_path = Path(config.manifesto_path)
