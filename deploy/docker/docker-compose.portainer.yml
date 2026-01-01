@@ -58,8 +58,7 @@ services:
     container_name: logos-mcp-server
     hostname: logos-mcp
     depends_on:
-      qdrant:
-        condition: service_healthy
+      - qdrant
     ports:
       - "6335:6335"  # MCP API port
     environment:
