@@ -6,17 +6,26 @@ This directory contains Docker Compose configurations for deploying Logos in var
 
 ### For Portainer Users (Recommended)
 
-1. **Copy the Portainer-optimized compose file:**
-   ```bash
-   cp docker-compose.portainer.yml docker-compose.yml
-   ```
+1. **Access Portainer:**
+   - Open your Portainer instance
+   - Navigate to **Stacks** section
 
-2. **Deploy to Portainer:**
-   - Go to Portainer → Stacks
-   - Create new stack
-   - Upload `docker-compose.portainer.yml`
-   - Set environment variables
-   - Deploy
+2. **Create New Stack:**
+   - Click **"Add stack"**
+   - Name: `logos`
+   - Method: **"Upload"**
+
+3. **Upload Configuration:**
+   - Upload file: `deploy/docker/docker-compose.portainer.yml`
+   - Environment variables: Configure as needed (see below)
+
+4. **Deploy:**
+   - Click **"Deploy the stack"**
+   - Monitor deployment in **Containers** section
+
+5. **Verify Deployment:**
+   - Check container health in Portainer
+   - Test API: `curl http://your-server:6335/docs`
 
 ### For Docker Compose Users
 
@@ -111,7 +120,7 @@ labels:
   - "com.docker.compose.project=logos"
   - "logos.service.type=core"
   - "logos.service.role=mcp-server"
-  - "logos.version=1.1.0"
+  - "logos.version=1.2.2"
   - "logos.api.port=6335"
 ```
 

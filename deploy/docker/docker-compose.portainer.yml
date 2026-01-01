@@ -82,6 +82,10 @@ services:
       - LLM_MODEL=${LLM_MODEL:-llama2}
       - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.7}
 
+      # Embedding model caching for faster startups
+      - FASTEMBED_CACHE_DIR=/app/cache/fastembed
+      - TMPDIR=/app/cache/fastembed
+
       # API Keys (set via Portainer secrets or environment)
       # - OPENAI_API_KEY=${OPENAI_API_KEY}
       # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
@@ -90,12 +94,13 @@ services:
     volumes:
       - logos_data:/app/data:z
       - logos_logs:/app/logs:z
-      - logos_model_cache:/tmp/fastembed_cache:z
+      - logos_model_cache:/app/cache:z
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1', 6335)); s.close()"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 300s
       start_period: 60s
     labels:
       - "com.docker.compose.project=logos"
