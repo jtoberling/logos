@@ -1,7 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-
   # Vector database for memory persistence
   qdrant:
     image: qdrant/qdrant:latest
@@ -19,6 +18,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - logos-network
     deploy:
       mode: replicated
       replicas: 1
@@ -35,7 +36,7 @@ services:
 
   # Main Logos MCP server
   logos-mcp:
-    image: logos:latest  # Use pre-built image for better compatibility
+    image: logos:latest # Use pre-built image for better compatibility
     # build:  # Uncomment for local builds
     #   context: ..
     #   dockerfile: Dockerfile
@@ -75,8 +76,16 @@ services:
       # Use Docker volumes only (Portainer/K8s compatible)
       - logos_data:/app/data:z
       - logos_logs:/app/logs:z
+    networks:
+      - logos-network
     healthcheck:
-      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 6335)); s.close()"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import socket; s=socket.socket(); s.connect(('localhost', 6335)); s.close()",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -92,10 +101,10 @@ services:
       resources:
         limits:
           memory: 2G
-          cpus: '1.0'
+          cpus: "1.0"
         reservations:
           memory: 1G
-          cpus: '0.5'
+          cpus: "0.5"
 
   # Optional: Local Ollama LLM service
   ollama:
@@ -106,18 +115,20 @@ services:
       - ollama_data:/root/.ollama:z
     environment:
       - OLLAMA_HOST=0.0.0.0
+    networks:
+      - logos-network
     profiles:
-      - llm  # Only start with --profile llm
+      - llm # Only start with --profile llm
     deploy:
       mode: replicated
       replicas: 1
       resources:
         limits:
           memory: 8G
-          cpus: '2.0'
+          cpus: "2.0"
         reservations:
           memory: 4G
-          cpus: '1.0'
+          cpus: "1.0"
       restart_policy:
         condition: on-failure
 
@@ -130,26 +141,28 @@ services:
       - lmstudio_data:/app/data:z
     environment:
       - LMSTUDIO_PORT=1234
+    networks:
+      - logos-network
     profiles:
-      - llm  # Only start with --profile llm
+      - llm # Only start with --profile llm
     deploy:
       mode: replicated
       replicas: 1
       resources:
         limits:
           memory: 8G
-          cpus: '2.0'
+          cpus: "2.0"
         reservations:
           memory: 4G
-          cpus: '1.0'
+          cpus: "1.0"
       restart_policy:
         condition: on-failure
 
 # Networks for Swarm compatibility
 networks:
-  default:
+  logos-network:
     driver: overlay
-    name: logos-network
+    attachable: true
 
 # Volumes
 volumes:
@@ -163,5 +176,3 @@ volumes:
     driver: local
   lmstudio_data:
     driver: local
-
-  

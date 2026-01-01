@@ -190,9 +190,9 @@ services:
 # ==========================================
 
 networks:
-  default:
+  logos-network:
     driver: overlay
-    name: logos-network
+    attachable: true
     labels:
       - "com.docker.compose.project=logos"
 
