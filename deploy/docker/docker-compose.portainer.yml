@@ -13,8 +13,6 @@ services:
   # Vector Database for Memory Persistence
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: logos-qdrant
-    hostname: qdrant
     ports:
       - "6333:6333"  # REST API
       - "6334:6334"  # gRPC API
@@ -24,7 +22,6 @@ services:
       - QDRANT__SERVICE__HTTP_PORT=6333
       - QDRANT__SERVICE__GRPC_PORT=6334
       - QDRANT__LOG_LEVEL=INFO
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
       interval: 30s
@@ -35,9 +32,9 @@ services:
       - "com.docker.compose.project=logos"
       - "logos.service.type=core"
       - "logos.service.role=database"
-    networks:
-      - logos-network
     deploy:
+      mode: replicated
+      replicas: 1
       resources:
         limits:
           memory: 1G
@@ -55,8 +52,6 @@ services:
     # build:  # Uncomment for local builds in Portainer
     #   context: ..
     #   dockerfile: Dockerfile
-    container_name: logos-mcp-server
-    hostname: logos-mcp
     depends_on:
       - qdrant
     ports:
@@ -94,7 +89,6 @@ services:
     volumes:
       - logos_data:/app/data:z
       - logos_logs:/app/logs:z
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1', 6335)); s.close()"]
       interval: 30s
@@ -107,9 +101,9 @@ services:
       - "logos.service.role=mcp-server"
       - "logos.version=1.1.0"
       - "logos.api.port=6335"
-    networks:
-      - logos-network
     deploy:
+      mode: replicated
+      replicas: 1
       resources:
         limits:
           memory: 2G
@@ -135,8 +129,6 @@ services:
   # Uncomment the following block to enable Ollama LLM support
   # ollama:
   #   image: ollama/ollama:latest
-  #   container_name: logos-ollama
-  #   hostname: ollama
   #   ports:
   #     - "11434:11434"
   #   volumes:
@@ -146,15 +138,14 @@ services:
   #     - OLLAMA_MAX_LOADED_MODELS=1
   #     - OLLAMA_MAX_QUEUE=512
   #     - OLLAMA_RUNNERS_DIR=/tmp/runners
-  #   restart: unless-stopped
   #   labels:
   #     - "com.docker.compose.project=logos"
   #     - "logos.service.type=optional"
   #     - "logos.service.role=llm-provider"
   #     - "logos.llm.provider=ollama"
-  #   networks:
-  #     - logos-network
   #   deploy:
+  #     mode: replicated
+  #     replicas: 1
   #     resources:
   #       limits:
   #         memory: 8G
@@ -169,8 +160,6 @@ services:
   # Uncomment the following block to enable LMStudio LLM support
   # lmstudio:
   #   image: ghcr.io/lmstudio-ai/lmstudio:latest
-  #   container_name: logos-lmstudio
-  #   hostname: lmstudio
   #   ports:
   #     - "1234:1234"
   #   volumes:
@@ -178,15 +167,14 @@ services:
   #   environment:
   #     - LMSTUDIO_PORT=1234
   #     - LMSTUDIO_HOST=0.0.0.0
-  #   restart: unless-stopped
   #   labels:
   #     - "com.docker.compose.project=logos"
   #     - "logos.service.type=optional"
   #     - "logos.service.role=llm-provider"
   #     - "logos.llm.provider=lmstudio"
-  #   networks:
-  #     - logos-network
   #   deploy:
+  #     mode: replicated
+  #     replicas: 1
   #     resources:
   #       limits:
   #         memory: 8G
@@ -202,8 +190,8 @@ services:
 # ==========================================
 
 networks:
-  logos-network:
-    driver: bridge
+  default:
+    driver: overlay
     name: logos-network
     labels:
       - "com.docker.compose.project=logos"

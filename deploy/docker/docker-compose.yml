@@ -1,21 +1,10 @@
 version: '3.8'
 
-# Named volumes for Portainer/Kubernetes compatibility
-# These create persistent storage that survives container updates and migrations
-volumes:
-  qdrant_storage:
-    driver: local
-  logos_data:
-    driver: local
-  logos_logs:
-    driver: local
-
 services:
 
   # Vector database for memory persistence
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: logos-memory
     ports:
       - "6333:6333"
       - "6334:6334"
@@ -24,20 +13,32 @@ services:
     environment:
       - QDRANT__SERVICE__HTTP_PORT=6333
       - QDRANT__SERVICE__GRPC_PORT=6334
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   # Main Logos MCP server
   logos-mcp:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    container_name: logos-mcp-server
+    image: logos:latest  # Use pre-built image for better compatibility
+    # build:  # Uncomment for local builds
+    #   context: ..
+    #   dockerfile: Dockerfile
     depends_on:
       qdrant:
         condition: service_healthy
@@ -74,44 +75,90 @@ services:
       # Use Docker volumes only (Portainer/K8s compatible)
       - logos_data:/app/data:z
       - logos_logs:/app/logs:z
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 6335)); s.close()"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 300s
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
 
   # Optional: Local Ollama LLM service
   ollama:
     image: ollama/ollama:latest
-    container_name: logos-ollama
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama:z
     environment:
       - OLLAMA_HOST=0.0.0.0
-    restart: unless-stopped
     profiles:
       - llm  # Only start with --profile llm
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 8G
+          cpus: '2.0'
+        reservations:
+          memory: 4G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
 
   # Optional: LMStudio local LLM service
   lmstudio:
     image: ghcr.io/lmstudio-ai/lmstudio:latest
-    container_name: logos-lmstudio
     ports:
       - "1234:1234"
     volumes:
       - lmstudio_data:/app/data:z
     environment:
       - LMSTUDIO_PORT=1234
-    restart: unless-stopped
     profiles:
       - llm  # Only start with --profile llm
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 8G
+          cpus: '2.0'
+        reservations:
+          memory: 4G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
 
-# Additional volumes for optional services
+# Networks for Swarm compatibility
+networks:
+  default:
+    driver: overlay
+    name: logos-network
+
+# Volumes
 volumes:
+  qdrant_storage:
+    driver: local
+  logos_data:
+    driver: local
+  logos_logs:
+    driver: local
   ollama_data:
     driver: local
   lmstudio_data:
