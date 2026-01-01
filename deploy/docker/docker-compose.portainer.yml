@@ -127,73 +127,75 @@ services:
   # OPTIONAL SERVICES (LLM Providers)
   # ==========================================
 
+  # ==========================================
+  # OPTIONAL SERVICES (Uncomment to enable)
+  # ==========================================
+
   # Local Ollama LLM Service
-  ollama:
-    image: ollama/ollama:latest
-    container_name: logos-ollama
-    hostname: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama:z
-    environment:
-      - OLLAMA_HOST=0.0.0.0
-      - OLLAMA_MAX_LOADED_MODELS=1
-      - OLLAMA_MAX_QUEUE=512
-      - OLLAMA_RUNNERS_DIR=/tmp/runners
-    restart: unless-stopped
-    profiles:
-      - llm
-    labels:
-      - "com.docker.compose.project=logos"
-      - "logos.service.type=optional"
-      - "logos.service.role=llm-provider"
-      - "logos.llm.provider=ollama"
-    networks:
-      - logos-network
-    deploy:
-      resources:
-        limits:
-          memory: 8G
-          cpus: '2.0'
-        reservations:
-          memory: 4G
-          cpus: '1.0'
-      restart_policy:
-        condition: on-failure
+  # Uncomment the following block to enable Ollama LLM support
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: logos-ollama
+  #   hostname: ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama:z
+  #   environment:
+  #     - OLLAMA_HOST=0.0.0.0
+  #     - OLLAMA_MAX_LOADED_MODELS=1
+  #     - OLLAMA_MAX_QUEUE=512
+  #     - OLLAMA_RUNNERS_DIR=/tmp/runners
+  #   restart: unless-stopped
+  #   labels:
+  #     - "com.docker.compose.project=logos"
+  #     - "logos.service.type=optional"
+  #     - "logos.service.role=llm-provider"
+  #     - "logos.llm.provider=ollama"
+  #   networks:
+  #     - logos-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 8G
+  #         cpus: '2.0'
+  #       reservations:
+  #         memory: 4G
+  #         cpus: '1.0'
+  #     restart_policy:
+  #       condition: on-failure
 
   # Local LMStudio LLM Service
-  lmstudio:
-    image: ghcr.io/lmstudio-ai/lmstudio:latest
-    container_name: logos-lmstudio
-    hostname: lmstudio
-    ports:
-      - "1234:1234"
-    volumes:
-      - lmstudio_data:/app/data:z
-    environment:
-      - LMSTUDIO_PORT=1234
-      - LMSTUDIO_HOST=0.0.0.0
-    restart: unless-stopped
-    profiles:
-      - llm
-    labels:
-      - "com.docker.compose.project=logos"
-      - "logos.service.type=optional"
-      - "logos.service.role=llm-provider"
-      - "logos.llm.provider=lmstudio"
-    networks:
-      - logos-network
-    deploy:
-      resources:
-        limits:
-          memory: 8G
-          cpus: '2.0'
-        reservations:
-          memory: 4G
-          cpus: '1.0'
-      restart_policy:
-        condition: on-failure
+  # Uncomment the following block to enable LMStudio LLM support
+  # lmstudio:
+  #   image: ghcr.io/lmstudio-ai/lmstudio:latest
+  #   container_name: logos-lmstudio
+  #   hostname: lmstudio
+  #   ports:
+  #     - "1234:1234"
+  #   volumes:
+  #     - lmstudio_data:/app/data:z
+  #   environment:
+  #     - LMSTUDIO_PORT=1234
+  #     - LMSTUDIO_HOST=0.0.0.0
+  #   restart: unless-stopped
+  #   labels:
+  #     - "com.docker.compose.project=logos"
+  #     - "logos.service.type=optional"
+  #     - "logos.service.role=llm-provider"
+  #     - "logos.llm.provider=lmstudio"
+  #   networks:
+  #     - logos-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 8G
+  #         cpus: '2.0'
+  #       reservations:
+  #         memory: 4G
+  #         cpus: '1.0'
+  #     restart_policy:
+  #       condition: on-failure
 
 # ==========================================
 # NETWORKS & VOLUMES
@@ -224,21 +226,17 @@ volumes:
       - "com.docker.compose.project=logos"
       - "logos.volume.type=logs"
 
-  # Optional LLM volumes
-  ollama_data:
-    driver: local
-    labels:
-      - "com.docker.compose.project=logos"
-      - "logos.volume.type=llm-models"
-    profiles:
-      - llm
-  lmstudio_data:
-    driver: local
-    labels:
-      - "com.docker.compose.project=logos"
-      - "logos.volume.type=llm-data"
-    profiles:
-      - llm
+  # Optional LLM volumes (uncomment when enabling LLM services)
+  # ollama_data:
+  #   driver: local
+  #   labels:
+  #     - "com.docker.compose.project=logos"
+  #     - "logos.volume.type=llm-models"
+  # lmstudio_data:
+  #   driver: local
+  #   labels:
+  #     - "com.docker.compose.project=logos"
+  #     - "logos.volume.type=llm-data"
 
 # ==========================================
 # PORTAINER CONFIGURATION NOTES
@@ -267,5 +265,7 @@ volumes:
 # - LLM services: 4GB-8GB RAM, 1-2 CPU cores
 #
 # Deployment Options:
-# 1. Core only: docker-compose -f docker-compose.portainer.yml up -d
-# 2. With LLM: docker-compose --profile llm -f docker-compose.portainer.yml up -d
+# 1. Core only: Deploy as-is (logos-mcp + qdrant only)
+# 2. With LLM: Uncomment desired LLM service(s) and volume(s) above, then deploy
+#    - For Ollama: Uncomment ollama service and ollama_data volume
+#    - For LMStudio: Uncomment lmstudio service and lmstudio_data volume
