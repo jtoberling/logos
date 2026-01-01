@@ -118,7 +118,7 @@ Logos is designed to run in a modular Linux/Docker environment:
 
 - **Core**: Python-based MCP (Model Context Protocol) server using FastMCP
 - **Memory**: Qdrant (Vector Database) for high-performance semantic retrieval
-- **Embeddings**: Local-first embedding generation via FastEmbed (BAAI/bge-small-en-v1.5)
+- **Embeddings**: Local-first embedding generation via FastEmbed (sentence-transformers/all-MiniLM-L6-v2)
 - **Document Processing**: Modular text extraction supporting 7 file formats
 - **CLI**: Optional command-line client with multi-provider LLM support
 - **Deployment**: Docker Compose with Portainer/Kubernetes compatibility
