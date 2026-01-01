@@ -47,7 +47,7 @@ class LogosConfig:
     anthropic_api_key: Optional[str] = None
 
     # Embedding settings
-    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_device: str = "cpu"
 
     # Data paths (Docker volume compatible)
@@ -160,7 +160,7 @@ def load_config_from_env() -> LogosConfig:
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 
     # Embedding settings
-    embedding_model = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
+    embedding_model = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     embedding_device = os.getenv("EMBEDDING_DEVICE", "cpu")
 
     # Data paths - use relative paths in development, Docker paths in production

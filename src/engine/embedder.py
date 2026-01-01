@@ -31,7 +31,7 @@ class LogosEmbedder:
     Uses FastEmbed for local text vectorization.
     """
 
-    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5") -> None:
+    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
         """
         Initialize the embedder.
 
@@ -118,12 +118,12 @@ class LogosEmbedder:
         Get the dimension of the embedding vectors.
 
         Returns:
-            Vector dimension (384 for bge-small-en-v1.5)
+            Vector dimension (384 for all-MiniLM-L6-v2)
         """
         # Try to get actual vector size, fallback to known size
         try:
             dummy_vector = self.embed_text("test")
             return len(dummy_vector[0])
         except Exception:
-            # Default size for bge-small-en-v1.5
+            # Default size for all-MiniLM-L6-v2
             return 384

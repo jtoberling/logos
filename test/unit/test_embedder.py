@@ -112,7 +112,7 @@ class TestLogosEmbedder:
         with patch('src.engine.embedder.FASTEMBED_AVAILABLE', False):
             embedder = LogosEmbedder()
 
-            assert embedder.model_name == "BAAI/bge-small-en-v1.5"
+            assert embedder.model_name == "sentence-transformers/all-MiniLM-L6-v2"
 
     def test_custom_model_name(self):
         """Test custom model name initialization."""
