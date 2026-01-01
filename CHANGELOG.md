@@ -5,6 +5,53 @@ All notable changes to the Logos project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-12-31
+
+### 🐳 Cache Directory Permission Fix
+
+This patch release fixes critical cache directory permission issues that prevented FastEmbed model caching from working properly in Docker containers.
+
+#### Fixed
+
+**🐳 Docker Cache Directory Issues**
+
+- **Permission Denied Errors**: Fixed `[Errno 13] Permission denied` errors when FastEmbed tried to create cache directories
+- **Cache Directory Location**: Moved FastEmbed cache from `/tmp/fastembed_cache` to `/app/cache/fastembed` for better permission control
+- **Directory Creation**: Ensured cache directories are created with proper permissions during Docker build
+- **Volume Mounting**: Updated Docker Compose volume mounts to use the new cache location
+
+**🔧 Technical Fixes**
+
+- **Robust Error Handling**: Added try-catch blocks around cache directory creation to handle permission failures gracefully
+- **Fallback Mechanisms**: Improved error handling with clear troubleshooting messages for cache issues
+- **Dockerfile Updates**: Added proper directory creation and ownership for cache directories
+- **Environment Variables**: Updated `FASTEMBED_CACHE_DIR` environment variable to use the new location
+
+#### Technical Details
+
+**Docker Changes:**
+```dockerfile
+# Before
+ENV FASTEMBED_CACHE_DIR=/tmp/fastembed_cache
+
+# After  
+ENV FASTEMBED_CACHE_DIR=/app/cache/fastembed
+RUN mkdir -p /app/cache/fastembed && chown -R logos:logos /app/cache
+```
+
+**Volume Mount Changes:**
+```yaml
+# Before
+- logos_model_cache:/tmp/fastembed_cache:z
+
+# After
+- logos_model_cache:/app/cache:z
+```
+
+This fix resolves the model download failures and cache permission issues that were preventing optimal performance in Docker deployments.
+
+---
+
 ## [1.2.0] - 2025-12-31
 
 ### 🌐 Community & Performance Enhancement Release

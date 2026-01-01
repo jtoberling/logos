@@ -44,18 +44,22 @@ class LogosEmbedder:
             try:
                 # Ensure cache directory exists and has proper permissions
                 import os
-                cache_dir = os.environ.get('FASTEMBED_CACHE_DIR', '/tmp/fastembed_cache')
-                os.makedirs(cache_dir, exist_ok=True)
-
-                # Ensure we can write to the cache directory
-                test_file = os.path.join(cache_dir, '.test_write')
+                cache_dir = os.environ.get('FASTEMBED_CACHE_DIR', '/app/cache/fastembed')
                 try:
-                    with open(test_file, 'w') as f:
-                        f.write('test')
-                    os.remove(test_file)
-                    logger.info(f"Using FastEmbed cache directory: {cache_dir}")
+                    os.makedirs(cache_dir, exist_ok=True)
+
+                    # Ensure we can write to the cache directory
+                    test_file = os.path.join(cache_dir, '.test_write')
+                    try:
+                        with open(test_file, 'w') as f:
+                            f.write('test')
+                        os.remove(test_file)
+                        logger.info(f"Using FastEmbed cache directory: {cache_dir}")
+                    except (OSError, PermissionError) as e:
+                        logger.warning(f"Cannot write to cache directory {cache_dir}: {e}")
+                        logger.warning("Model caching may not work properly")
                 except (OSError, PermissionError) as e:
-                    logger.warning(f"Cannot write to cache directory {cache_dir}: {e}")
+                    logger.warning(f"Cannot create cache directory {cache_dir}: {e}")
                     logger.warning("Model caching may not work properly")
 
                 logger.info(f"Initializing embedding model {model_name}...")
@@ -82,7 +86,7 @@ class LogosEmbedder:
                 logger.warning("  1) Check network connectivity for model download")
                 logger.warning("  2) Verify cache directory permissions: " + cache_dir)
                 logger.warning("  3) Ensure sufficient disk space (~200MB free)")
-                logger.warning("  4) Check Docker volume mount: logos_model_cache")
+                logger.warning("  4) Check Docker volume mount: logos_model_cache -> /app/cache")
                 logger.info("Continuing with mock embeddings - limited functionality available")
                 # Fallback to mock
                 self.model = TextEmbedding()

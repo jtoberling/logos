@@ -45,7 +45,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     # FastEmbed cache configuration
-    FASTEMBED_CACHE_DIR=/tmp/fastembed_cache \
+    FASTEMBED_CACHE_DIR=/app/cache/fastembed \
     # HuggingFace cache configuration
     HF_HOME=/home/logos/.cache/huggingface \
     HF_HUB_CACHE=/home/logos/.cache/huggingface/hub \
@@ -53,12 +53,12 @@ ENV PYTHONUNBUFFERED=1 \
     HF_HUB_DISABLE_TELEMETRY=1
 
 # Create directories with proper permissions
-RUN mkdir -p /app/data /app/logs /app/docs && \
+RUN mkdir -p /app/data /app/logs /app/docs /app/cache/fastembed && \
     chown -R logos:logos /app
 
-# Create HuggingFace cache directory (FastEmbed cache will be volume-mounted)
-RUN mkdir -p /home/logos/.cache/huggingface && \
-    chown -R logos:logos /home/logos/.cache
+# Create HuggingFace cache directory and FastEmbed cache directory
+RUN mkdir -p /home/logos/.cache/huggingface /app/cache/fastembed && \
+    chown -R logos:logos /home/logos/.cache /app/cache
 
 # Set work directory
 WORKDIR /app
