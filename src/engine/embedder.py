@@ -42,10 +42,48 @@ class LogosEmbedder:
 
         if FASTEMBED_AVAILABLE:
             try:
+                # Ensure cache directory exists and has proper permissions
+                import os
+                cache_dir = os.environ.get('FASTEMBED_CACHE_DIR', '/tmp/fastembed_cache')
+                os.makedirs(cache_dir, exist_ok=True)
+
+                # Ensure we can write to the cache directory
+                test_file = os.path.join(cache_dir, '.test_write')
+                try:
+                    with open(test_file, 'w') as f:
+                        f.write('test')
+                    os.remove(test_file)
+                    logger.info(f"Using FastEmbed cache directory: {cache_dir}")
+                except (OSError, PermissionError) as e:
+                    logger.warning(f"Cannot write to cache directory {cache_dir}: {e}")
+                    logger.warning("Model caching may not work properly")
+
+                logger.info(f"Initializing embedding model {model_name}...")
+                logger.info("Note: First startup may take several minutes to download the model (~100MB)")
+                logger.info("Subsequent startups will be much faster using the cached model")
+
+                # Time the model loading for better user feedback
+                import time
+                start_time = time.time()
+
                 self.model = TextEmbedding(model_name=model_name)
-                logger.info(f"Model {model_name} loaded successfully.")
+
+                load_time = time.time() - start_time
+                if load_time > 10:  # Log timing for operations that took more than 10 seconds
+                    logger.info(".1f")
+                else:
+                    logger.info(f"Model {model_name} loaded successfully from cache.")
+
             except Exception as e:
-                logger.warning(f"Failed to initialize model {model_name}. Error: {e}")
+                logger.error(f"Failed to initialize embedding model {model_name}")
+                logger.error(f"Error details: {e}")
+                logger.warning("Falling back to mock embeddings for basic functionality")
+                logger.warning("Troubleshooting steps:")
+                logger.warning("  1) Check network connectivity for model download")
+                logger.warning("  2) Verify cache directory permissions: " + cache_dir)
+                logger.warning("  3) Ensure sufficient disk space (~200MB free)")
+                logger.warning("  4) Check Docker volume mount: logos_model_cache")
+                logger.info("Continuing with mock embeddings - limited functionality available")
                 # Fallback to mock
                 self.model = TextEmbedding()
         else:

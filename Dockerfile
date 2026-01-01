@@ -43,11 +43,22 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Set environment variables for runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=/app
+    PYTHONPATH=/app \
+    # FastEmbed cache configuration
+    FASTEMBED_CACHE_DIR=/tmp/fastembed_cache \
+    # HuggingFace cache configuration
+    HF_HOME=/home/logos/.cache/huggingface \
+    HF_HUB_CACHE=/home/logos/.cache/huggingface/hub \
+    # Disable telemetry
+    HF_HUB_DISABLE_TELEMETRY=1
 
 # Create directories with proper permissions
 RUN mkdir -p /app/data /app/logs /app/docs && \
     chown -R logos:logos /app
+
+# Create HuggingFace cache directory (FastEmbed cache will be volume-mounted)
+RUN mkdir -p /home/logos/.cache/huggingface && \
+    chown -R logos:logos /home/logos/.cache
 
 # Set work directory
 WORKDIR /app

@@ -89,6 +89,7 @@ services:
     volumes:
       - logos_data:/app/data:z
       - logos_logs:/app/logs:z
+      - logos_model_cache:/tmp/fastembed_cache:z
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1', 6335)); s.close()"]
       interval: 30s
@@ -213,6 +214,11 @@ volumes:
     labels:
       - "com.docker.compose.project=logos"
       - "logos.volume.type=logs"
+  logos_model_cache:
+    driver: local
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.volume.type=model-cache"
 
   # Optional LLM volumes (uncomment when enabling LLM services)
   # ollama_data:
