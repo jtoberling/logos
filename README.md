@@ -4,6 +4,8 @@
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Test Coverage](https://img.shields.io/badge/coverage-80%25-green.svg)](https://pytest-cov.readthedocs.io/)
 [![Docker Ready](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+[![Security Policy](https://img.shields.io/badge/Security-Policy-blue.svg)](SECURITY.md)
+[![GitHub Security Advisories](https://img.shields.io/github/advisories/search?query=repo:jtoberling/logos&type=security)](https://github.com/jtoberling/logos/security/advisories)
 
 ## 📋 TL;DR
 
