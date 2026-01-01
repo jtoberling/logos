@@ -231,8 +231,7 @@ When reporting bugs or requesting features:
 ## 🆘 Getting Help
 
 - **Documentation**: Check [docs/](docs/) directory
-- **Discussions**: Use [GitHub Discussions](https://github.com/jtoberling/logos/discussions) for questions
-- **Issues**: For bugs and feature requests
+- **Issues**: For questions, bugs, and feature requests via [GitHub Issues](https://github.com/jtoberling/logos/issues)
 - **Security**: For security issues, see [SECURITY.md](SECURITY.md)
 
 ## 📚 Additional Resources

@@ -33,10 +33,9 @@ Paste code or configuration here
 ```
 
 ### Related Links
-<!-- Link to relevant documentation, issues, or discussions. -->
+<!-- Link to relevant documentation or issues. -->
 - [ ] I've checked the [documentation](https://github.com/jtoberling/logos/tree/main/docs)
 - [ ] I've searched [existing issues](https://github.com/jtoberling/logos/issues)
-- [ ] I've checked [existing discussions](https://github.com/jtoberling/logos/discussions)
 
 ### Is this a...
 - [ ] General question about Logos
