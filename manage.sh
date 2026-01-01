@@ -603,30 +603,36 @@ show_last_security_scan() {
 show_usage() {
     print_header
     print_message "${YELLOW}" "USAGE:"
-    echo "  $0 [command]"
+    echo "  $0 [command]    # Direct command execution"
+    echo "  $0              # Interactive menu mode"
     echo
     print_message "${YELLOW}" "COMMANDS:"
-    echo "  status     - Show service status"
-    echo "  start      - Start core services (Qdrant + MCP)"
-    echo "  start-llm  - Start LLM services (Ollama + LMStudio)"
-    echo "  start-cli  - Setup and prepare CLI client"
-    echo "  build      - Build Docker image"
-    echo "  stop       - Stop all services"
-    echo "  logs       - View service logs"
-    echo "  health     - Check service health"
-    echo "  security        - Run security scan with Semgrep"
-    echo "  security-report - Show last security scan results"
-    echo "  cleanup         - Remove containers and volumes"
-    echo "  help            - Show this help"
+    echo "  status            - Show service status"
+    echo "  start             - Start core services (Qdrant + MCP)"
+    echo "  start-llm         - Start LLM services (Ollama + LMStudio)"
+    echo "  start-cli         - Setup and prepare CLI client"
+    echo "  build             - Build Docker image"
+    echo "  stop              - Stop all services"
+    echo "  logs              - View service logs interactively"
+    echo "  health            - Check service health"
+    echo "  security          - Run security scan with Semgrep"
+    echo "  security-report   - Show last security scan results"
+    echo "  cleanup           - Remove containers and volumes"
+    echo "  help              - Show this help"
+    echo
+    print_message "${YELLOW}" "INTERACTIVE MENU HOTKEYS:"
+    print_message "${CYAN}"   "  Service Control: s=start, l=llm, c=cli, b=build, q=stop, t=status"
+    print_message "${CYAN}"   "  Monitoring:      v=logs, h=health, r=security, p=report, u=cleanup"
+    print_message "${RED}"    "  System:          ?=help, x=exit"
     echo
     print_message "${YELLOW}" "EXAMPLES:"
-    echo "  $0 status           # Show current status"
-    echo "  $0 start            # Start Logos services"
-    echo "  $0 start-cli        # Setup CLI client"
-    echo "  $0 build            # Build Docker image"
-    echo "  $0 security         # Run security scan"
-    echo "  $0 security-report  # Show last scan results"
-    echo "  $0 logs             # View logs interactively"
+    echo "  $0                # Launch interactive menu"
+    echo "  $0 status         # Show current status"
+    echo "  $0 start          # Start Logos services"
+    echo "  $0 start-cli      # Setup CLI client"
+    echo "  $0 build          # Build Docker image"
+    echo "  $0 security       # Run security scan"
+    echo "  $0 logs           # View logs interactively"
     echo
 }
 
@@ -636,32 +642,42 @@ show_menu() {
         print_header
         show_service_status
 
-        print_message "${YELLOW}" "Select an option:"
-        echo -e "  ${MAGENTA}1${RESET} - ${YELLOW}Start Core Services${RESET}    ${MAGENTA}2${RESET} - ${YELLOW}Start LLM Services${RESET}    ${MAGENTA}3${RESET} - ${YELLOW}Setup CLI${RESET}"
-        echo -e "  ${MAGENTA}4${RESET} - ${YELLOW}Build Docker Image${RESET}     ${MAGENTA}5${RESET} - ${YELLOW}Stop All Services${RESET}      ${MAGENTA}6${RESET} - ${YELLOW}Service Status${RESET}"
-        echo -e "  ${MAGENTA}7${RESET} - ${YELLOW}View Logs${RESET}               ${MAGENTA}8${RESET} - ${YELLOW}Health Check${RESET}          ${MAGENTA}9${RESET} - ${YELLOW}Security Scan${RESET}"
-        echo -e "  ${MAGENTA}a${RESET} - ${YELLOW}Last Security Report${RESET}     ${MAGENTA}0${RESET} - ${YELLOW}Cleanup${RESET}                 ${MAGENTA}q${RESET} - ${YELLOW}Quit${RESET}"
         echo
-        print_message "${CYAN}" "Enter your choice: "
+        print_message "${BOLD}${YELLOW}" "╔══════════════════════ SERVICE CONTROL ══════════════════════╗"
+        echo -e "${BOLD}${YELLOW}║${RESET}  ${MAGENTA}s${RESET} - Start Core Services     ${MAGENTA}l${RESET} - Start LLM Services     ${MAGENTA}c${RESET} - Setup CLI           ${RESET}${BOLD}${YELLOW}║${RESET}"
+        echo -e "${BOLD}${YELLOW}║${RESET}  ${MAGENTA}b${RESET} - Build Docker Image     ${MAGENTA}q${RESET} - Stop All Services     ${MAGENTA}t${RESET} - Service Status      ${RESET}${BOLD}${YELLOW}║${RESET}"
+        echo -e "${BOLD}${YELLOW}╚═══════════════════════════════════════════════════════════════╝${RESET}"
+
+        echo
+        print_message "${BOLD}${YELLOW}" "╔══════════════════════ MONITORING ═══════════════════════════╗"
+        echo -e "${BOLD}${YELLOW}║${RESET}  ${MAGENTA}v${RESET} - View Logs               ${MAGENTA}h${RESET} - Health Check          ${MAGENTA}r${RESET} - Security Scan       ${RESET}${BOLD}${YELLOW}║${RESET}"
+        echo -e "${BOLD}${YELLOW}║${RESET}  ${MAGENTA}p${RESET} - Last Security Report   ${MAGENTA}u${RESET} - Cleanup               ${MAGENTA}?${RESET} - Help                ${RESET}${BOLD}${YELLOW}║${RESET}"
+        echo -e "${BOLD}${YELLOW}╚═══════════════════════════════════════════════════════════════╝${RESET}"
+
+        echo
+        print_message "${BOLD}${RED}" "  [x] Exit / Quit"
+        echo
+        print_message "${CYAN}" "Choose an option: "
         read -r choice
 
         case $choice in
-            1) start_services ;;
-            2) start_llm_services ;;
-            3) start_cli ;;
-            4) build_docker ;;
-            5) stop_services ;;
-            6) show_service_status ;;
-            7) show_logs ;;
-            8) check_health ;;
-            9) run_security_scan ;;
-            a|A) show_last_security_scan ;;
-            0) cleanup ;;
-            q|Q) break ;;
-            *) print_message "${RED}" "Invalid choice. Please try again." ;;
+            s|S) start_services ;;
+            l|L) start_llm_services ;;
+            c|C) start_cli ;;
+            b|B) build_docker ;;
+            q|Q) stop_services ;;
+            t|T) show_service_status ;;
+            v|V) show_logs ;;
+            h|H) check_health ;;
+            r|R) run_security_scan ;;
+            p|P) show_last_security_scan ;;
+            u|U) cleanup ;;
+            \?|help|-h|--help) show_usage ;;
+            x|X) break ;;
+            *) print_message "${RED}" "❌ Invalid choice. Press '?' for help or 'x' to exit." ;;
         esac
 
-        if [[ $choice != "q" && $choice != "Q" ]]; then
+        if [[ $choice != "x" && $choice != "X" ]]; then
             echo
             print_message "${CYAN}" "Press Enter to continue..."
             read -r
