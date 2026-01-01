@@ -48,10 +48,11 @@ services:
 
   # Main Logos MCP Server
   logos-mcp:
-    image: logos-minimal:latest  # Use pre-built image for Portainer
-    # build:  # Uncomment for local builds in Portainer
-    #   context: ..
-    #   dockerfile: Dockerfile
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: logos:latest
+    container_name: logos-mcp-server
     depends_on:
       - qdrant
     ports:

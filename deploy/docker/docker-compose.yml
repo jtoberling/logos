@@ -36,10 +36,11 @@ services:
 
   # Main Logos MCP server
   logos-mcp:
-    image: logos:latest # Use pre-built image for better compatibility
-    # build:  # Uncomment for local builds
-    #   context: ..
-    #   dockerfile: Dockerfile
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: logos:latest
+    container_name: logos-mcp-server
     depends_on:
       qdrant:
         condition: service_healthy
@@ -68,6 +69,9 @@ services:
       - LLM_PROVIDER=ollama
       - LLM_MODEL=llama2
 
+      # Embedding model caching for faster startups
+      - FASTEMBED_CACHE_DIR=/app/cache/fastembed
+
       # Optional: Uncomment and configure if using external LLM APIs
       # - OPENAI_API_KEY=your_key_here
       # - ANTHROPIC_API_KEY=your_key_here
@@ -90,7 +94,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 300s
     deploy:
       mode: replicated
       replicas: 1
