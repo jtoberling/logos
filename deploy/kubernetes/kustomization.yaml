@@ -1,0 +1,58 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: logos
+
+# Base resources
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+
+# Common labels
+commonLabels:
+  app.kubernetes.io/name: logos
+  app.kubernetes.io/version: "1.1.0"
+  app.kubernetes.io/component: memory-engine
+  app.kubernetes.io/part-of: logos
+  app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  logos/deployment: kubernetes
+  logos/version: "1.1.0"
+
+# Namespace for all resources
+namespace: logos
+
+# Images
+images:
+  - name: qdrant/qdrant
+    newTag: latest
+  - name: logos-minimal
+    newTag: latest
+
+# ConfigMap generator for environment variables
+configMapGenerator:
+  - name: logos-config
+    literals:
+      - LOGOS_MANIFESTO_PATH=/app/docs/MANIFESTO.md
+      - LOGOS_PERSONALITY_NAME=Logos
+      - LOGOS_CREATOR_NAME=Janos Toberling
+      - DATA_DIR=/app/data
+      - LOGS_DIR=/app/logs
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=6335
+      - LOG_LEVEL=INFO
+
+# Secret generator (values will be patched)
+secretGenerator:
+  - name: logos-secrets
+    literals:
+      - LLM_PROVIDER=ollama
+      - LLM_MODEL=llama2
+      - LLM_TEMPERATURE=0.7

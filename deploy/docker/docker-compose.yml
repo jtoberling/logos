@@ -1,6 +1,7 @@
 version: '3.8'
 
-# Docker volumes for Portainer/Kubernetes compatibility
+# Named volumes for Portainer/Kubernetes compatibility
+# These create persistent storage that survives container updates and migrations
 volumes:
   qdrant_storage:
     driver: local
@@ -41,7 +42,7 @@ services:
       qdrant:
         condition: service_healthy
     ports:
-      - "6334:6334"
+      - "6335:6335"
     environment:
       # Qdrant configuration
       - QDRANT_HOST=qdrant
@@ -58,7 +59,7 @@ services:
 
       # MCP server configuration
       - MCP_HOST=0.0.0.0
-      - MCP_PORT=6334
+      - MCP_PORT=6335
       - LOG_LEVEL=INFO
 
       # Default LLM provider (can be overridden)
@@ -75,7 +76,7 @@ services:
       - logos_logs:/app/logs:z
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 6334)); s.close()"]
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 6335)); s.close()"]
       interval: 30s
       timeout: 10s
       retries: 3

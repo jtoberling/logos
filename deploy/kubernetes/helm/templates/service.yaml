@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "logos.fullname" . }}
+  labels:
+    {{- include "logos.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+spec:
+  type: {{ .Values.logos.service.type }}
+  selector:
+    {{- include "logos.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: mcp-server
+  ports:
+  - name: mcp
+    port: {{ .Values.logos.service.ports.mcp }}
+    targetPort: {{ .Values.logos.service.ports.mcp }}
+    protocol: TCP
+  {{- if .Values.qdrant.enabled }}
+  - name: qdrant-http
+    port: {{ .Values.qdrant.service.ports.http }}
+    targetPort: {{ .Values.qdrant.service.ports.http }}
+    protocol: TCP
+  - name: qdrant-grpc
+    port: {{ .Values.qdrant.service.ports.grpc }}
+    targetPort: {{ .Values.qdrant.service.ports.grpc }}
+    protocol: TCP
+  {{- end }}

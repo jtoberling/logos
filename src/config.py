@@ -56,7 +56,7 @@ class LogosConfig:
 
     # MCP server settings
     mcp_host: str = "0.0.0.0"
-    mcp_port: int = 6334
+    mcp_port: int = 6335  # Changed from 8000, avoiding conflict with Qdrant gRPC (6334)
 
     # Logging
     log_level: str = "INFO"
@@ -169,7 +169,7 @@ def load_config_from_env() -> LogosConfig:
 
     # MCP server settings
     mcp_host = os.getenv("MCP_HOST", "0.0.0.0")
-    mcp_port = int(os.getenv("MCP_PORT", "6334"))
+    mcp_port = int(os.getenv("MCP_PORT", "6335"))  # Avoiding conflict with Qdrant gRPC (6334)
 
     # Logging
     log_level = os.getenv("LOG_LEVEL", "INFO")

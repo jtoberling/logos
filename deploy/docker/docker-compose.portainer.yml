@@ -1,0 +1,272 @@
+version: '3.8'
+
+# Portainer-Optimized Docker Compose Configuration for Logos
+# This file is specifically designed for Portainer stack deployment
+# with enhanced monitoring, logging, and management features
+
+services:
+
+  # ==========================================
+  # CORE SERVICES (Always Running)
+  # ==========================================
+
+  # Vector Database for Memory Persistence
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: logos-qdrant
+    hostname: qdrant
+    ports:
+      - "6333:6333"  # REST API
+      - "6334:6334"  # gRPC API
+    volumes:
+      - qdrant_storage:/qdrant/storage:z
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.service.type=core"
+      - "logos.service.role=database"
+    networks:
+      - logos-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  # Main Logos MCP Server
+  logos-mcp:
+    image: logos-minimal:latest  # Use pre-built image for Portainer
+    # build:  # Uncomment for local builds in Portainer
+    #   context: ..
+    #   dockerfile: Dockerfile
+    container_name: logos-mcp-server
+    hostname: logos-mcp
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    ports:
+      - "6335:6335"  # MCP API port
+    environment:
+      # Database Configuration
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+
+      # Logos Core Configuration
+      - LOGOS_MANIFESTO_PATH=/app/docs/MANIFESTO.md
+      - LOGOS_PERSONALITY_NAME=Logos
+      - LOGOS_PERSONALITY_BIRTH_DATE=2025-01-01
+      - LOGOS_CREATOR_NAME=Janos Toberling
+
+      # Data Management
+      - DATA_DIR=/app/data
+      - LOGS_DIR=/app/logs
+
+      # Server Configuration
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=6335
+      - LOG_LEVEL=INFO
+
+      # LLM Configuration (set via Portainer environment variables)
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - LLM_MODEL=${LLM_MODEL:-llama2}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.7}
+
+      # API Keys (set via Portainer secrets or environment)
+      # - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # - GEMINI_API_KEY=${GEMINI_API_KEY}
+
+    volumes:
+      - logos_data:/app/data:z
+      - logos_logs:/app/logs:z
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1', 6335)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.service.type=core"
+      - "logos.service.role=mcp-server"
+      - "logos.version=1.1.0"
+      - "logos.api.port=6335"
+    networks:
+      - logos-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 300s
+
+  # ==========================================
+  # OPTIONAL SERVICES (LLM Providers)
+  # ==========================================
+
+  # Local Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: logos-ollama
+    hostname: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama:z
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_MAX_LOADED_MODELS=1
+      - OLLAMA_MAX_QUEUE=512
+      - OLLAMA_RUNNERS_DIR=/tmp/runners
+    restart: unless-stopped
+    profiles:
+      - llm
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.service.type=optional"
+      - "logos.service.role=llm-provider"
+      - "logos.llm.provider=ollama"
+    networks:
+      - logos-network
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '2.0'
+        reservations:
+          memory: 4G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
+
+  # Local LMStudio LLM Service
+  lmstudio:
+    image: ghcr.io/lmstudio-ai/lmstudio:latest
+    container_name: logos-lmstudio
+    hostname: lmstudio
+    ports:
+      - "1234:1234"
+    volumes:
+      - lmstudio_data:/app/data:z
+    environment:
+      - LMSTUDIO_PORT=1234
+      - LMSTUDIO_HOST=0.0.0.0
+    restart: unless-stopped
+    profiles:
+      - llm
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.service.type=optional"
+      - "logos.service.role=llm-provider"
+      - "logos.llm.provider=lmstudio"
+    networks:
+      - logos-network
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '2.0'
+        reservations:
+          memory: 4G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
+
+# ==========================================
+# NETWORKS & VOLUMES
+# ==========================================
+
+networks:
+  logos-network:
+    driver: bridge
+    name: logos-network
+    labels:
+      - "com.docker.compose.project=logos"
+
+volumes:
+  # Core data volumes
+  qdrant_storage:
+    driver: local
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.volume.type=database"
+  logos_data:
+    driver: local
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.volume.type=data"
+  logos_logs:
+    driver: local
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.volume.type=logs"
+
+  # Optional LLM volumes
+  ollama_data:
+    driver: local
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.volume.type=llm-models"
+    profiles:
+      - llm
+  lmstudio_data:
+    driver: local
+    labels:
+      - "com.docker.compose.project=logos"
+      - "logos.volume.type=llm-data"
+    profiles:
+      - llm
+
+# ==========================================
+# PORTAINER CONFIGURATION NOTES
+# ==========================================
+#
+# Environment Variables to set in Portainer:
+# - LLM_PROVIDER: Choose from [ollama, openai, anthropic, gemini]
+# - LLM_MODEL: Model name (provider-specific)
+# - LLM_TEMPERATURE: Generation temperature (0.0-1.0)
+# - OPENAI_API_KEY: Your OpenAI API key (if using OpenAI)
+# - ANTHROPIC_API_KEY: Your Anthropic API key (if using Anthropic)
+# - GEMINI_API_KEY: Your Google Gemini API key (if using Gemini)
+#
+# Volumes:
+# - All data persists in named Docker volumes
+# - No host directory mounts for Kubernetes compatibility
+# - Volumes survive container updates and recreation
+#
+# Health Checks:
+# - Qdrant: HTTP health check on /healthz
+# - Logos MCP: TCP connection to port 6335
+#
+# Resource Limits:
+# - Qdrant: 512MB-1GB RAM
+# - Logos MCP: 1GB-2GB RAM, 0.5-1 CPU core
+# - LLM services: 4GB-8GB RAM, 1-2 CPU cores
+#
+# Deployment Options:
+# 1. Core only: docker-compose -f docker-compose.portainer.yml up -d
+# 2. With LLM: docker-compose --profile llm -f docker-compose.portainer.yml up -d

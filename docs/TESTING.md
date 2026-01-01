@@ -463,7 +463,7 @@ repos:
     rev: v1.70.0
     hooks:
       - id: semgrep
-        args: [--config, .semgrep.yml, --error]
+        args: [--config, config/.semgrep.yml, src/, cli/, deploy/, --error]
 
   - repo: local
     hooks:

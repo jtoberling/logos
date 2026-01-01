@@ -1,5 +1,5 @@
 """
-Setup script for logos-cli package.
+Setup script for cli package.
 """
 
 from setuptools import setup, find_packages
@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
     requirements = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 setup(
-    name="logos-cli",
+    name="cli",
     version="0.1.0",
     description="CLI client for Logos with local LLM integration",
     long_description="Command-line interface for interacting with Logos using various local LLMs",

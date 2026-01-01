@@ -1,13 +1,9 @@
-# Use Python 3.12 slim image for smaller size
-FROM python:3.12-slim
+# ================================
+# Build stage for dependencies
+# ================================
+FROM python:3.12-slim AS builder
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
-
-# Install system dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -15,8 +11,39 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Set environment variables for build
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install Python dependencies (production only)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ================================
+# Runtime stage (final image)
+# ================================
+FROM python:3.12-slim AS runtime
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user
 RUN groupadd -r logos && useradd -r -g logos logos
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set environment variables for runtime
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
 
 # Create directories with proper permissions
 RUN mkdir -p /app/data /app/logs /app/docs && \
@@ -25,28 +52,20 @@ RUN mkdir -p /app/data /app/logs /app/docs && \
 # Set work directory
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt ./
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy source code
-COPY src/ ./src/
-COPY docs/ ./docs/
-
-# Change ownership of copied files
-RUN chown -R logos:logos /app
+# Copy source code and docs (single layer for better caching)
+COPY --chown=logos:logos src/ ./src/
+COPY --chown=logos:logos docs/ ./docs/
+# Note: VERSION file is optional - Python code has fallback to hardcoded version
 
 # Switch to non-root user
 USER logos
 
 # Expose MCP server port
-EXPOSE 6334
+EXPOSE 6335
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:6334/health', timeout=5)" || exit 1
+# Health check - check if port is listening
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD python -c "import socket; s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1', 6335)); s.close()" || exit 1
 
 # Start the MCP server
 CMD ["python", "-m", "src.main"]

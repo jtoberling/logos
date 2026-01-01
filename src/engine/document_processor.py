@@ -372,7 +372,7 @@ class DocumentProcessor:
         file_format = self.detect_file_format(filename, mimetype)
 
         # Calculate checksum
-        checksum = hashlib.md5(content).hexdigest()
+        checksum = hashlib.sha256(content).hexdigest()
 
         # Extract text
         text = self.extract_text(content, file_format)

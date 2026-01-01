@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logos
+  labels:
+    name: logos
+    app.kubernetes.io/name: logos
+    app.kubernetes.io/component: memory-engine
+  annotations:
+    logos/deployment: kubernetes
+    logos/purpose: "Digital personality and memory engine"

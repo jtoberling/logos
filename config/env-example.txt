@@ -90,7 +90,7 @@ LOGS_DIR=/app/logs
 
 # MCP server network settings
 MCP_HOST=0.0.0.0
-MCP_PORT=6334
+MCP_PORT=6335
 
 # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
 # DEBUG: Detailed diagnostic information
@@ -113,7 +113,7 @@ PYTHONUNBUFFERED=1
 # =============================================================================
 #
 # For Docker deployment:
-# - Use docker-compose.yml in logos-core/docker/
+# - Use docker-compose.yml in deploy/docker/
 # - All paths should use Docker volumes, not local directories
 # - Set DATA_DIR and LOGS_DIR to /app/data and /app/logs respectively
 #

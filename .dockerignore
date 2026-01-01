@@ -1,0 +1,74 @@
+# Development files
+.git
+.gitignore
+.github
+venv/
+env/
+ENV/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.egg-info/
+dist/
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg
+
+# IDE files
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project-specific exclusions
+test/
+reports/
+scripts/
+cli/
+deploy/
+config/
+logs/
+.env*
+*.log
+*.tmp
+*.temp
+.cache/
+
+# Documentation that's not needed in container
+docs/chat_with_sophia.txt
+docs/CHANGELOG.md
+manage-README.md
+
+# Keep only essential files for production
+!src/
+!docs/MANIFESTO.md
+!docs/ARCHITECTURE.md
+!VERSION

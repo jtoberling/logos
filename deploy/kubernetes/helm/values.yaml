@@ -1,0 +1,193 @@
+# Default values for logos chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global settings
+global:
+  # Namespace to deploy into
+  namespace: logos
+
+  # Common labels
+  labels:
+    app.kubernetes.io/name: logos
+    app.kubernetes.io/version: "1.1.0"
+    app.kubernetes.io/component: memory-engine
+    app.kubernetes.io/part-of: logos
+    app.kubernetes.io/managed-by: helm
+
+# Image settings
+image:
+  qdrant:
+    repository: qdrant/qdrant
+    tag: latest
+    pullPolicy: IfNotPresent
+  logos:
+    repository: logos-minimal
+    tag: latest
+    pullPolicy: IfNotPresent
+
+# Logos MCP Server configuration
+logos:
+  enabled: true
+  replicaCount: 1
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      mcp: 6335
+
+  # Resource limits and requests
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  # Environment variables
+  env:
+    LOGOS_MANIFESTO_PATH: "/app/docs/MANIFESTO.md"
+    LOGOS_PERSONALITY_NAME: "Logos"
+    LOGOS_CREATOR_NAME: "Janos Toberling"
+    DATA_DIR: "/app/data"
+    LOGS_DIR: "/app/logs"
+    MCP_HOST: "0.0.0.0"
+    MCP_PORT: "6335"
+    LOG_LEVEL: "INFO"
+    QDRANT_HOST: "127.0.0.1"
+    QDRANT_PORT: "6333"
+
+  # Secrets (sensitive configuration)
+  secrets:
+    LLM_PROVIDER: "ollama"
+    LLM_MODEL: "llama2"
+    LLM_TEMPERATURE: "0.7"
+    # OPENAI_API_KEY: ""
+    # ANTHROPIC_API_KEY: ""
+    # GEMINI_API_KEY: ""
+
+# Qdrant Vector Database configuration
+qdrant:
+  enabled: true
+  replicaCount: 1
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      http: 6333
+      grpc: 6334
+
+  # Resource limits and requests
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+  # Environment variables
+  env:
+    QDRANT__SERVICE__HTTP_PORT: "6333"
+    QDRANT__SERVICE__GRPC_PORT: "6334"
+    QDRANT__LOG_LEVEL: "INFO"
+
+# Persistence configuration
+persistence:
+  enabled: true
+
+  # Qdrant storage
+  qdrant:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+
+  # Logos data
+  data:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+
+  # Logos logs
+  logs:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: logos.local
+      paths:
+        - path: /qdrant
+          pathType: Prefix
+          service:
+            name: qdrant
+            port: 6333
+        - path: /mcp
+          pathType: Prefix
+          service:
+            name: logos
+            port: 6334
+  tls: []
+  #  - secretName: logos-tls
+  #    hosts:
+  #      - logos.local
+
+# Security context
+securityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Monitoring
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    namespace: monitoring
+    interval: 30s
+    scrapeTimeout: 10s
+
+# Additional volumes
+extraVolumes: []
+
+# Additional volume mounts
+extraVolumeMounts: []

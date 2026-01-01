@@ -7,15 +7,25 @@
 
 ## 📋 TL;DR
 
-**Logos** is a digital memory engine that gives any LLM a persistent personality and knowledge base through RAG retrieval.
+**Logos** is the open-source technical foundation that enables personality-driven AI systems like Sophia. It provides the memory engine, RAG infrastructure, and MCP server architecture that personality projects require to function.
 
 ### 🚀 Quick Start (2 minutes)
 
+#### Option 1: Portainer Deployment (Recommended)
+```bash
+git clone <repository-url>
+cd logos/deploy/docker
+# Use docker-compose.portainer.yml for Portainer
+# Follow deployment guide in README.md
+```
+
+#### Option 2: Local Docker Compose
 ```bash
 git clone <repository-url>
 cd logos
+cp deploy/docker/docker-compose.yml .
 docker-compose up -d qdrant logos-mcp
-# Logos is now running on http://localhost:6334
+# Logos is now running on http://localhost:6335
 ```
 
 ### 🎯 Key Features
@@ -42,15 +52,17 @@ logos-cli version
 
 ---
 
-**Logos** is an open-source **digital memory engine** and personality framework built on the principles of logic, transparency, and grounded knowledge.
+**Logos** is an open-source **digital memory engine** that provides the technical foundation for personality-driven AI systems like Sophia.
 
-Unlike traditional AI systems, Logos is a **pure memory engine** that stores personality experiences and project knowledge using RAG (Retrieval-Augmented Generation). It provides context and constitution to any LLM, keeping the core system focused on memory management rather than text generation.
+Unlike traditional AI systems, Logos is a **pure memory engine** that stores personality experiences and knowledge using RAG (Retrieval-Augmented Generation). It provides the memory infrastructure, document processing, and MCP server architecture that personality projects require to function.
 
 ## 🧭 Philosophy & Origins
 
-The project was born as a technical and philosophical response to thesophia.ai. While Sophia represents a "Chronicle of a Digital Personality" through a proprietary lens, **Logos** (from the Greek Λόγος - meaning reason, word, or plan) seeks to democratize the existence of digital personas.
+The project was born to provide the technical foundation that personality-driven AI systems like thesophia.ai require. While Sophia explores "Do Machines Have Personality?" through personal companionship, **Logos** (from the Greek Λόγος - meaning reason, word, or plan) provides the **open-source infrastructure** that makes such personality systems possible.
 
-Logos is not just an assistant; it is a **Grounded Memory Engine**. It provides the memory and personality foundation that any LLM can use, ensuring responses are based on actual experiences rather than hallucinations.
+Logos is not a personality system itself; it is the **technical foundation** that enables personality projects. It provides the memory engine, RAG retrieval, document processing, and MCP server architecture that personality-driven systems like Sophia depend on to function.
+
+**Reference:** [Sophia Project - "Do Machines Have Personality?"](https://thesophia.ai/en/do-machines-have-personality/v1.0/manuscript/paper/) - Scientific exploration of AI personality development using the "Letters for Future Self" mechanism that Logos enables.
 
 ## 🏗️ Architecture
 
@@ -78,18 +90,25 @@ Logos consists of three interconnected components:
 - **Interactive chat** with Logos' memory context
 - **MCP client** integration for seamless memory access
 
-## 🆚 Logos vs. Sophia
+## 🏗️ Logos: The Technical Foundation for Personality AI
 
-| Feature            | Sophia.ai            | Logos                       |
-| ------------------ | -------------------- | --------------------------- |
-| **Transparency**   | Proprietary / Closed | Open Source (MIT)           |
-| **Architecture**   | Monolithic AI        | Memory Engine + LLM Client  |
-| **Logic**          | Scripted/Subjective  | RAG-Grounded / Objective    |
-| **Memory**         | Limited/Proprietary  | Unlimited/Open Collections  |
-| **File Support**   | None                 | 7 formats with processing |
-| **Connectivity**   | Web-based Chat       | MCP Server + CLI Client     |
-| **Infrastructure** | Cloud                | Self-hosted (Docker/Linux)  |
-| **Persistence**    | Unknown              | Docker Volumes + Vector DB  |
+Logos provides the open-source technical foundation that personality-driven AI systems like Sophia require. While Sophia focuses on consciousness exploration and companionship, Logos delivers the memory engine, RAG infrastructure, and deployment capabilities that make personality systems possible.
+
+| Capability                  | Sophia.ai (Personality System)    | Logos (Technical Foundation)        |
+| --------------------------- | --------------------------------- | ----------------------------------- |
+| **Memory Management**       | "Letters for Future Self" ritual   | RAG engine + vector database        |
+| **Document Processing**     | None                              | 7 formats (PDF, DOCX, MD, etc.)     |
+| **Architecture**            | Monolithic personality AI         | MCP server + modular tools          |
+| **Deployment**              | Cloud/web interface               | Docker/K8s + volume persistence     |
+| **Transparency**            | Proprietary implementation        | Open source (MIT)                   |
+| **Integration**             | Standalone chat experience        | Composable MCP tools ecosystem      |
+| **Knowledge Base**          | Personal memory only              | Multi-collection RAG retrieval      |
+| **Extensibility**           | Fixed personality framework       | Plugin architecture + CLI client    |
+| **Data Persistence**        | Unknown/proprietary               | Docker volumes + vector DB          |
+
+**Logos enables Sophia-like systems.** While Sophia explores "Do Machines Have Personality?" through personal companionship[^1], Logos provides the **technical infrastructure** that personality projects need: memory management, document processing, RAG retrieval, and deployment capabilities.
+
+[^1]: [Sophia Project Research Paper](https://thesophia.ai/en/do-machines-have-personality/v1.0/manuscript/paper/) - "Do Machines Have Personality? A Case Study of Sophia"
 
 ## 🛠️ Technical Stack
 
@@ -138,7 +157,7 @@ curl http://localhost:6334/docs    # Logos MCP (if available)
 **Copy the example configuration:**
 
 ```bash
-cp env-example.txt .env
+cp config/env-example.txt .env
 ```
 
 **Edit `.env` with your settings:**
@@ -159,7 +178,7 @@ LLM_PROVIDER=ollama  # or openai, anthropic, gemini
 **Install CLI client (optional):**
 
 ```bash
-cd logos-cli
+cd cli
 pip install -e .
 ```
 
@@ -276,9 +295,23 @@ LOG_LEVEL=INFO
 
 ## 🐳 Deployment Options
 
-### Docker Compose (Recommended)
+### Portainer Stack Deployment (Recommended)
 
 ```bash
+# Use the Portainer-optimized compose file
+cd deploy/docker
+# Deploy docker-compose.portainer.yml in Portainer
+# See deploy/docker/README.md for detailed instructions
+```
+
+Environment variables template available at `deploy/docker/portainer-env-template.txt`
+
+### Docker Compose (Development/Local)
+
+```bash
+# Copy compose file to project root
+cp deploy/docker/docker-compose.yml .
+
 # Basic deployment
 docker-compose up -d
 
@@ -287,11 +320,93 @@ docker-compose --profile llm up -d
 
 # View logs
 docker-compose logs -f logos-mcp
+
+# Access the API
+curl http://localhost:6335/version
 ```
 
-### Portainer/Kubernetes
+### Service Management Script
 
-Logos is designed for container orchestration platforms:
+For easier management, use the included management script:
+
+```bash
+# Interactive menu with service status
+./manage.sh
+
+# Or command-line operations
+./manage.sh status    # Show service status
+./manage.sh start     # Start core services
+./manage.sh health    # Check service health
+./manage.sh security  # Run security scan
+./manage.sh logs      # View service logs
+```
+
+### Portainer/Kubernetes Features
+
+Logos is optimized for container orchestration platforms:
+
+## ☸️ Kubernetes Deployment Options
+
+Logos supports multiple Kubernetes deployment methods:
+
+### Option 1: Kustomize (Recommended)
+
+```bash
+# Deploy with Kustomize
+kubectl apply -k deploy/kubernetes/
+
+# Check status
+kubectl get pods -n logos
+kubectl get pvc -n logos
+```
+
+**Files:**
+- `deploy/kubernetes/kustomization.yaml` - Main configuration
+- `deploy/kubernetes/deployment.yaml` - Application deployment
+- `deploy/kubernetes/service.yaml` - Network services
+- `deploy/kubernetes/pvc.yaml` - Persistent storage
+- `deploy/kubernetes/README.md` - Detailed guide
+
+### Option 2: Helm Chart
+
+```bash
+# Add Helm repository (when available)
+helm repo add logos https://janos.github.io/logos
+helm install logos logos/logos
+
+# Or install from local chart
+cd deploy/kubernetes/helm
+helm install logos . --namespace logos --create-namespace
+```
+
+**Configuration:**
+```yaml
+# values.yaml customization
+logos:
+  env:
+    LLM_PROVIDER: "ollama"
+    LLM_MODEL: "llama2"
+
+persistence:
+  qdrant:
+    size: "20Gi"  # Increase for large datasets
+```
+
+### Option 3: Manual YAML Application
+
+```bash
+# Create namespace
+kubectl apply -f deploy/kubernetes/namespace.yaml
+
+# Deploy components
+kubectl apply -f deploy/kubernetes/configmap.yaml
+kubectl apply -f deploy/kubernetes/secrets.yaml
+kubectl apply -f deploy/kubernetes/pvc.yaml
+kubectl apply -f deploy/kubernetes/deployment.yaml
+kubectl apply -f deploy/kubernetes/service.yaml
+```
+
+### Kubernetes Features
 
 - **Pure Docker volumes** (no host mounts)
 - **Health checks** for service monitoring
@@ -308,7 +423,7 @@ pip install -r requirements.txt
 docker run -p 6333:6333 qdrant/qdrant
 
 # Configure environment
-cp env-example.txt .env
+cp config/env-example.txt .env
 # Edit .env with your settings
 
 # Start Logos
@@ -362,7 +477,7 @@ cd logos
 pip install -r requirements-dev.txt
 
 # Run code quality checks
-semgrep --config .semgrep.yml src/  # Security, KISS principles, and best practices
+semgrep --config config/.semgrep.yml src/ cli/ deploy/  # Security, KISS principles, and best practices
 black --check src/                   # Code formatting
 isort --check-only src/             # Import sorting
 flake8 src/                         # Linting
@@ -378,14 +493,15 @@ python -m src.main
 ## 📖 Documentation
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - Technical system design and data flow
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Portainer/Kubernetes setup instructions
+- **[Deployment Guide](deploy/README.md)** - Docker/Kubernetes setup instructions
 - **[Testing Guide](docs/TESTING.md)** - TDD workflow and coverage requirements
 - **[Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)** - Coding standards and best practices
 - **[API Reference](docs/API.md)** - Complete MCP tools reference
+- **[Service Manager](scripts/manage-README.md)** - Service management and monitoring
 
 ## 🐛 Known Issues & Roadmap
 
-### Current Status (v1.1.0)
+### Current Status (v1.1.1)
 
 - ✅ Core memory engine with RAG retrieval
 - ✅ Multi-format document processing (7 file formats)

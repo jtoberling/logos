@@ -56,7 +56,7 @@ cd logos
 ### 2. Configure Environment
 
 ```bash
-cp env-example.txt .env
+cp config/env-example.txt .env
 # Edit .env with your settings
 ```
 
@@ -76,7 +76,7 @@ curl http://localhost:6334/docs    # Logos MCP
 
 ```bash
 # Install CLI (optional)
-pip install -e logos-cli/
+pip install -e cli/
 
 # Test memory functionality
 logos-cli chat --llm ollama --model llama2
@@ -289,7 +289,7 @@ tar -xzf qdrant-x86_64-unknown-linux-gnu.tar.gz
 **3. Configure Environment:**
 
 ```bash
-cp env-example.txt .env
+cp config/env-example.txt .env
 # Edit paths for local development
 DATA_DIR=./data
 LOGS_DIR=./logs

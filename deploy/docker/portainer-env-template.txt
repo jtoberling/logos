@@ -1,0 +1,66 @@
+# Portainer Environment Variables Template
+# Copy this to Portainer's environment variables section
+
+# ==========================================
+# LLM CONFIGURATION
+# ==========================================
+
+# Choose your LLM provider: ollama, openai, anthropic, gemini
+LLM_PROVIDER=ollama
+
+# Model name (provider-specific)
+# Ollama: llama2, codellama, mistral, etc.
+# OpenAI: gpt-4, gpt-3.5-turbo, etc.
+# Anthropic: claude-3-sonnet-20240229, claude-3-haiku-20240307, etc.
+# Gemini: gemini-pro, gemini-pro-vision, etc.
+LLM_MODEL=llama2
+
+# Generation temperature (0.0 = deterministic, 1.0 = creative)
+LLM_TEMPERATURE=0.7
+
+# ==========================================
+# API KEYS (Only for cloud providers)
+# ==========================================
+
+# OpenAI API Key (only if LLM_PROVIDER=openai)
+# OPENAI_API_KEY=sk-your-openai-key-here
+
+# Anthropic API Key (only if LLM_PROVIDER=anthropic)
+# ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+
+# Google Gemini API Key (only if LLM_PROVIDER=gemini)
+# GEMINI_API_KEY=your-gemini-api-key-here
+
+# ==========================================
+# OPTIONAL ADVANCED SETTINGS
+# ==========================================
+
+# Maximum tokens per response (default: 2000)
+# LLM_MAX_TOKENS=2000
+
+# Ollama base URL (default: http://localhost:11434)
+# OLLAMA_BASE_URL=http://localhost:11434
+
+# LMStudio base URL (default: http://localhost:1234/v1)
+#
+# Note: Logos MCP server runs on port 6335 to avoid conflict with Qdrant gRPC (6334)
+# LMSTUDIO_BASE_URL=http://localhost:1234/v1
+
+# ==========================================
+# DEPLOYMENT NOTES
+# ==========================================
+
+# 1. Copy only the variables you need to Portainer
+# 2. Remove the '#' from lines you want to use
+# 3. Never commit API keys to version control
+# 4. Use Portainer's secrets management for sensitive data
+
+# For local LLM providers (ollama/lmstudio):
+# - Ensure the LLM service is running (--profile llm)
+# - No API keys needed
+# - Models must be pre-downloaded in the container
+
+# For cloud providers:
+# - Set LLM_PROVIDER to the cloud service
+# - Provide the corresponding API key
+# - Models are accessed via API calls

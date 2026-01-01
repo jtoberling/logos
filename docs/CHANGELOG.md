@@ -5,6 +5,96 @@ All notable changes to the Logos project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-12-31
+
+### 🏗️ Infrastructure & Deployment Enhancement Release
+
+This release introduces major infrastructure improvements, comprehensive deployment options, and enhanced project organization while maintaining full backward compatibility.
+
+#### Added
+
+**🏗️ Project Structure Restructuring**
+- **Organized Directory Structure**: Reorganized codebase into logical directories (`cli/`, `deploy/`, `config/`, `docs/`)
+- **Modular Architecture**: Separated concerns with dedicated directories for different components
+- **Clean Repository**: Removed redundant files and improved file organization
+
+**🚀 Deployment Infrastructure**
+- **Kubernetes Support**: Complete Helm charts and Kustomize configurations for cloud deployment
+- **Enhanced Docker Compose**: Improved service orchestration with Portainer compatibility
+- **Multi-Environment Support**: Separate configurations for development, staging, and production
+
+**🛠️ Management & Monitoring**
+- **Service Management Script** (`manage.sh`): Comprehensive CLI tool for service control and monitoring
+- **Interactive Management Interface**: Color-coded status displays and menu-driven operations
+- **Health Monitoring**: Automated health checks and service status reporting
+- **Security Scanning**: Integrated Semgrep security analysis with report generation
+
+**📦 Dependency Management**
+- **Requirements Organization**: Separated runtime and development dependencies with `.in` files
+- **Optimized Dependencies**: Streamlined dependency tree for better compatibility
+- **Version Pinning**: Improved dependency version management and security
+
+**🔧 Configuration Management**
+- **Structured Configuration**: Organized configuration files in dedicated `config/` directory
+- **Environment Templates**: Standardized environment variable templates for different deployments
+- **Docker Integration**: Improved container configuration and volume management
+
+#### Changed
+
+**📁 File Organization**
+- **CLI Relocation**: Moved command-line tools from `logos-cli/` to `cli/` for better structure
+- **Documentation Restructuring**: Centralized documentation in `docs/` with improved organization
+- **Deployment Centralization**: All deployment configurations moved to `deploy/` directory
+
+**🐳 Docker Improvements**
+- **Volume Management**: Enhanced Docker volume configuration for better persistence
+- **Service Orchestration**: Improved inter-service communication and dependency management
+- **Portainer Compatibility**: Optimized configurations for Portainer deployment platform
+
+**🔒 Security & Quality**
+- **Syntax Error Fixes**: Resolved configuration file syntax issues
+- **Code Quality Improvements**: Enhanced error handling and configuration validation
+- **Security Scanning**: Automated vulnerability detection and reporting
+
+#### Fixed
+
+**🐛 Configuration Issues**
+- **Syntax Errors**: Fixed indentation and syntax errors in configuration files
+- **Import Issues**: Resolved module import and dependency conflicts
+- **Environment Handling**: Improved environment variable validation and defaults
+
+**🚀 Deployment Fixes**
+- **Kubernetes Templates**: Corrected Helm template syntax and configuration issues
+- **Docker Compose**: Fixed service dependencies and volume mounting issues
+- **Port Management**: Resolved port conflicts and improved service isolation
+
+#### Technical Details
+
+**Infrastructure Added:**
+- Service management script with 15+ commands
+- Kubernetes deployment with Helm charts
+- Enhanced Docker Compose configurations
+- Security scanning and reporting system
+
+**Directory Structure:**
+```
+├── cli/                    # Command-line interface
+├── config/                 # Configuration files
+├── deploy/                 # Deployment configurations
+│   ├── docker/            # Docker Compose files
+│   └── kubernetes/        # K8s manifests and Helm
+├── docs/                  # Documentation
+└── reports/               # Security scan reports
+```
+
+**New Commands:**
+- `manage.sh status` - Service status and health
+- `manage.sh security` - Run security scans
+- `manage.sh deploy` - Deployment management
+- `manage.sh cleanup` - Maintenance operations
+
+---
+
 ## [1.1.0] - 2025-12-31
 
 ### 🎯 Quality Enhancement Release
@@ -125,7 +215,7 @@ This release transforms Logos from a concept into a fully functional, production
 **📚 Documentation & Guidelines**
 
 - **Complete README**: Comprehensive project documentation with deployment guides
-- **Configuration Guide**: Detailed environment variable documentation (`env-example.txt`)
+- **Configuration Guide**: Detailed environment variable documentation (`config/env-example.txt`)
 - **Development Guidelines**: KISS principle, type hints, error handling standards
 - **Architecture Overview**: Technical system design and data flow documentation
 
@@ -141,7 +231,7 @@ This release transforms Logos from a concept into a fully functional, production
 **📋 File Structure Overhaul**
 
 - **Organized Modules**: Clear separation into `config`, `engine`, `personality`, `memory`, `tools`, `llm`
-- **CLI Separation**: Optional command-line client moved to dedicated `logos-cli/` directory
+- **CLI Separation**: Optional command-line client moved to dedicated `cli/` directory
 - **Test Organization**: Comprehensive test suite with fixtures and mocking
 - **Documentation Structure**: Organized docs with clear navigation and purpose
 

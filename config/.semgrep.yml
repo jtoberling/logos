@@ -75,6 +75,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # KISS Principle: Function complexity limits
   - id: too-many-parameters
@@ -88,6 +94,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # KISS Principle: Long functions
   - id: function-too-long
@@ -131,6 +143,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Documentation: Missing docstrings for functions (DISABLED - unreliable detection)
   # - id: missing-docstring
@@ -160,6 +178,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Code Quality: Magic numbers
   - id: magic-number
@@ -175,6 +199,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Best Practices: Deep nesting
   - id: deeply-nested-if
@@ -190,6 +220,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Best Practices: Async function naming
   - id: async-function-naming
@@ -207,6 +243,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Best Practices: Proper logging levels
   - id: incorrect-log-level
@@ -221,6 +263,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Code Quality: Unused imports (DISABLED - use dedicated tools like autoflake)
   # - id: unused-import
@@ -254,6 +302,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Security: Environment variable access without validation
   - id: unsafe-env-access
@@ -267,6 +321,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Import Organization: Relative imports should be used within packages
   - id: avoid-absolute-imports
@@ -279,6 +339,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
       exclude:
         - "**/src/tools/memory_tools.py"  # Allow fallback imports here
 
@@ -294,6 +360,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Performance: Inefficient list operations
   - id: inefficient-list-ops
@@ -308,6 +380,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Performance: String concatenation in loops
   - id: string-concat-in-loop
@@ -322,6 +400,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Best Practices: Boolean checks
   - id: unnecessary-equality
@@ -338,6 +422,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Best Practices: Dict key access (DISABLED - too many false positives)
   # - id: unsafe-dict-access
@@ -382,6 +472,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Code Quality: Large classes (simplified check)
   - id: many-methods-class
@@ -409,6 +505,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
 
   # Performance: Multiple calls to same method
@@ -424,6 +526,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Best Practices: Context manager usage
   - id: missing-context-manager
@@ -441,6 +549,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Code Quality: Empty except blocks
   - id: empty-except
@@ -461,6 +575,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
 
   # Best Practices: Print statements in production
   - id: print-in-production
@@ -475,6 +595,12 @@ rules:
     paths:
       include:
         - "**/src/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/cli/**/*.py"
+        - "**/deploy/**/*.py"
+        - "**/deploy/**/*.yaml"
+        - "**/deploy/**/*.yml"
       exclude:
         - "**/src/main.py"  # Allow import error prints
         - "**/src/personality/prompt_manager.py"  # Allow demo prints

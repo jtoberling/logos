@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "logos.fullname" . }}
+  labels:
+    {{- include "logos.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mcp-server
+spec:
+  replicas: {{ .Values.logos.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "logos.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mcp-server
+  template:
+    metadata:
+      labels:
+        {{- include "logos.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: mcp-server
+    spec:
+      {{- if .Values.securityContext.enabled }}
+      securityContext:
+        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      {{- end }}
+      containers:
+      {{- if .Values.qdrant.enabled }}
+      # Qdrant Vector Database
+      - name: qdrant
+        image: {{ .Values.image.qdrant.repository }}:{{ .Values.image.qdrant.tag }}
+        imagePullPolicy: {{ .Values.image.qdrant.pullPolicy }}
+        ports:
+        - containerPort: 6333
+          name: http
+          protocol: TCP
+        - containerPort: 6334
+          name: grpc
+          protocol: TCP
+        env:
+          {{- range $key, $value := .Values.qdrant.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+        volumeMounts:
+        - name: qdrant-storage
+          mountPath: /qdrant/storage
+        resources:
+          {{- toYaml .Values.qdrant.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 6333
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 6333
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      {{- end }}
+
+      # Logos MCP Server
+      - name: logos-mcp
+        image: {{ .Values.image.logos.repository }}:{{ .Values.image.logos.tag }}
+        imagePullPolicy: {{ .Values.image.logos.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.logos.service.ports.mcp }}
+          name: mcp
+          protocol: TCP
+        env:
+          {{- range $key, $value := .Values.logos.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+          {{- range $key, $value := .Values.logos.secrets }}
+          - name: {{ $key }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "logos.fullname" . }}
+                key: {{ $key }}
+          {{- end }}
+        volumeMounts:
+        - name: logos-data
+          mountPath: /app/data
+        - name: logos-logs
+          mountPath: /app/logs
+        {{- if .Values.extraVolumeMounts }}
+        {{- toYaml .Values.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.logos.resources | nindent 10 }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.logos.service.ports.mcp }}
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.logos.service.ports.mcp }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          tcpSocket:
+            port: {{ .Values.logos.service.ports.mcp }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+
+      volumes:
+      {{- if .Values.persistence.enabled }}
+      - name: qdrant-storage
+        persistentVolumeClaim:
+          claimName: {{ include "logos.fullname" . }}-qdrant
+      - name: logos-data
+        persistentVolumeClaim:
+          claimName: {{ include "logos.fullname" . }}-data
+      - name: logos-logs
+        persistentVolumeClaim:
+          claimName: {{ include "logos.fullname" . }}-logs
+      {{- end }}
+      {{- if .Values.extraVolumes }}
+      {{- toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
