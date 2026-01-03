@@ -46,8 +46,10 @@ class TestMCPIntegration:
     @patch('src.main.get_config')
     def test_server_creation_failure_handling(self, mock_get_config, mock_prompt_manager, mock_vector_store):
         """Test that server creation handles failures gracefully."""
-        # Setup config mock
+        # Setup config mock with proper string values
         mock_config = MagicMock()
+        mock_config.qdrant_host = "localhost"
+        mock_config.qdrant_port = 6333
         mock_get_config.return_value = mock_config
 
         # Make vector store fail
@@ -63,8 +65,10 @@ class TestMCPIntegration:
     @patch('src.main.initialize_tools')
     def test_tools_initialization(self, mock_initialize_tools, mock_get_config, mock_prompt_manager, mock_vector_store):
         """Test that tools are properly initialized with dependencies."""
-        # Setup mocks
+        # Setup mocks with proper string values
         mock_config = MagicMock()
+        mock_config.qdrant_host = "localhost"
+        mock_config.qdrant_port = 6333
         mock_get_config.return_value = mock_config
 
         mock_vector_store_instance = MagicMock()
@@ -87,8 +91,10 @@ class TestMCPIntegration:
     @patch('src.main.get_config')
     def test_config_validation_in_server_creation(self, mock_get_config, mock_prompt_manager, mock_vector_store):
         """Test that configuration validation occurs during server creation."""
-        # Setup mocks
+        # Setup mocks with proper string values
         mock_config = MagicMock()
+        mock_config.qdrant_host = "localhost"
+        mock_config.qdrant_port = 6333
         mock_get_config.return_value = mock_config
 
         mock_vector_store_instance = MagicMock()

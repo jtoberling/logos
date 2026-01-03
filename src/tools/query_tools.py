@@ -18,6 +18,10 @@ except ImportError:
             return func
         return decorator
 
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
+
 # These will be imported when the MCP server initializes
 # from ..config import get_config
 # from ..engine.vector_store import LogosVectorStore
@@ -46,6 +50,9 @@ def initialize_tools(vector_store, prompt_manager) -> None:
     _vector_store = vector_store
     _prompt_manager = prompt_manager
 
+    logger.info("Query tools initialized with vector store and prompt manager")
+    logger.info("Available query tools: query_logos, get_constitution, get_memory_context, get_collection_stats, get_version")
+
 
 @tool()
 def query_logos(question: str, limit: int = 5) -> str:
@@ -67,7 +74,10 @@ def query_logos(question: str, limit: int = 5) -> str:
         - project_knowledge: Relevant knowledge from project_knowledge
         - metadata: Query metadata
     """
+    logger.info(f"MCP API: query_logos called with question='{question}' (limit={limit})")
+
     if not _vector_store or not _prompt_manager:
+        logger.warning("MCP API: query_logos failed - server not properly initialized")
         return json.dumps({
             "error": "Logos MCP server not properly initialized",
             "constitution": "",
@@ -77,11 +87,17 @@ def query_logos(question: str, limit: int = 5) -> str:
         })
 
     try:
+        logger.info(f"Searching logos_essence collection for: {question}")
         # Search both collections
         essence_results = _vector_store.search("logos_essence", question, limit=min(limit, 3))
+
+        logger.info(f"Searching project_knowledge collection for: {question}")
         project_results = _vector_store.search("project_knowledge", question, limit=limit)
 
         # Build response
+        total_results = len(essence_results) + len(project_results)
+        logger.info(f"Found {len(essence_results)} personality memories and {len(project_results)} project knowledge results")
+
         response = {
             "constitution": _prompt_manager.get_constitution(),
             "personality_memories": [
@@ -105,13 +121,15 @@ def query_logos(question: str, limit: int = 5) -> str:
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "personality_results_count": len(essence_results),
                 "project_results_count": len(project_results),
-                "total_results": len(essence_results) + len(project_results)
+                "total_results": total_results
             }
         }
 
+        logger.info(f"MCP API: query_logos completed - returned {total_results} total results")
         return json.dumps(response, indent=2, ensure_ascii=False)
 
     except Exception as e:
+        logger.error(f"MCP API: query_logos failed - {str(e)}")
         return json.dumps({
             "error": f"Query failed: {str(e)}",
             "constitution": _prompt_manager.get_constitution() if _prompt_manager else "",
@@ -130,12 +148,18 @@ def get_constitution() -> str:
         The complete constitution text that defines Logos' personality,
         rules, and behavioral guidelines.
     """
+    logger.info("MCP API: get_constitution called")
+
     if not _prompt_manager:
+        logger.warning("MCP API: get_constitution failed - prompt manager not available")
         return "Error: Logos constitution not available"
 
     try:
-        return _prompt_manager.get_constitution()
+        constitution = _prompt_manager.get_constitution()
+        logger.info(f"MCP API: get_constitution completed - returned {len(constitution)} characters")
+        return constitution
     except Exception as e:
+        logger.error(f"MCP API: get_constitution failed - {str(e)}")
         return f"Error retrieving constitution: {str(e)}"
 
 
@@ -152,7 +176,10 @@ def get_memory_context(question: str, collection: str = "both", limit: int = 5) 
     Returns:
         JSON string with relevant memories and metadata
     """
+    logger.info(f"MCP API: get_memory_context called with question='{question}' (collection={collection}, limit={limit})")
+
     if not _vector_store:
+        logger.warning("MCP API: get_memory_context failed - vector store not available")
         return json.dumps({
             "error": "Vector store not available",
             "memories": [],
@@ -163,6 +190,7 @@ def get_memory_context(question: str, collection: str = "both", limit: int = 5) 
         results = []
 
         if collection in ["essence", "both"]:
+            logger.info(f"Searching logos_essence collection for: {question}")
             essence_results = _vector_store.search("logos_essence", question, limit=limit if collection == "essence" else limit//2)
             results.extend([{
                 "collection": "logos_essence",
@@ -170,8 +198,10 @@ def get_memory_context(question: str, collection: str = "both", limit: int = 5) 
                 "metadata": {k: v for k, v in result.payload.items() if k != "text"},
                 "score": result.score
             } for result in essence_results])
+            logger.info(f"Found {len(essence_results)} results in logos_essence")
 
         if collection in ["project", "both"]:
+            logger.info(f"Searching project_knowledge collection for: {question}")
             project_results = _vector_store.search("project_knowledge", question, limit=limit if collection == "project" else limit//2)
             results.extend([{
                 "collection": "project_knowledge",
@@ -179,9 +209,11 @@ def get_memory_context(question: str, collection: str = "both", limit: int = 5) 
                 "metadata": {k: v for k, v in result.payload.items() if k != "text"},
                 "score": result.score
             } for result in project_results])
+            logger.info(f"Found {len(project_results)} results in project_knowledge")
 
         # Sort by score (highest first)
         results.sort(key=lambda x: x["score"], reverse=True)
+        logger.info(f"MCP API: get_memory_context completed - returned {len(results)} total memories")
 
         return json.dumps({
             "memories": results,
@@ -195,6 +227,7 @@ def get_memory_context(question: str, collection: str = "both", limit: int = 5) 
         }, indent=2, ensure_ascii=False)
 
     except Exception as e:
+        logger.error(f"MCP API: get_memory_context failed - {str(e)}")
         return json.dumps({
             "error": f"Memory search failed: {str(e)}",
             "memories": [],
@@ -210,7 +243,10 @@ def get_collection_stats() -> str:
     Returns:
         JSON string with collection statistics
     """
+    logger.info("MCP API: get_collection_stats called")
+
     if not _vector_store:
+        logger.warning("MCP API: get_collection_stats failed - vector store not available")
         return json.dumps({
             "error": "Vector store not available",
             "collections": {}
@@ -219,7 +255,7 @@ def get_collection_stats() -> str:
     try:
         # This would need to be implemented in the vector store
         # For now, return basic info
-        return json.dumps({
+        stats = {
             "collections": {
                 "logos_essence": {"description": "Personality memories and letters"},
                 "project_knowledge": {"description": "Project and technical knowledge"},
@@ -228,9 +264,13 @@ def get_collection_stats() -> str:
             "metadata": {
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
-        }, indent=2)
+        }
+
+        logger.info(f"MCP API: get_collection_stats completed - returned stats for {len(stats['collections'])} collections")
+        return json.dumps(stats, indent=2)
 
     except Exception as e:
+        logger.error(f"MCP API: get_collection_stats failed - {str(e)}")
         return json.dumps({
             "error": f"Failed to get collection stats: {str(e)}",
             "collections": {}
@@ -246,6 +286,8 @@ def get_version() -> str:
         JSON string with version information including version number,
         author, description, and system details.
     """
+    logger.info("MCP API: get_version called")
+
     try:
         version_info = {
             "version": logos.__version__,
@@ -259,9 +301,12 @@ def get_version() -> str:
                 "architecture": "MCP Server + Document Processing"
             }
         }
+
+        logger.info(f"MCP API: get_version completed - returned version {logos.__version__}")
         return json.dumps(version_info, indent=2)
 
     except Exception as e:
+        logger.error(f"MCP API: get_version failed - {str(e)}")
         return json.dumps({
             "error": f"Failed to get version information: {str(e)}",
             "version": "unknown"

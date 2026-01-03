@@ -17,6 +17,10 @@ except ImportError:
             return func
         return decorator
 
+from ..logging_config import get_logger
+
+logger = get_logger(__name__)
+
 # Import from the letter protocol
 try:
     from ..memory.letter_protocol import LetterProtocol
@@ -41,6 +45,9 @@ def initialize_memory_tools(letter_protocol: LetterProtocol) -> None:
     global _letter_protocol
     _letter_protocol = letter_protocol
 
+    logger.info("Memory tools initialized with letter protocol")
+    logger.info("Available memory tools: create_letter_for_future_self, get_memory_statistics, retrieve_recent_memories, retrieve_memories_by_creator")
+
 
 @tool()
 def create_letter_for_future_self(
@@ -64,7 +71,10 @@ def create_letter_for_future_self(
     Returns:
         JSON string with creation result and letter ID
     """
+    logger.info(f"MCP API: create_letter_for_future_self called by '{creator}' - summary length: {len(interaction_summary)} chars")
+
     if not _letter_protocol:
+        logger.warning("MCP API: create_letter_for_future_self failed - memory tools not initialized")
         return json.dumps({
             "success": False,
             "error": "Memory tools not properly initialized"
@@ -72,18 +82,21 @@ def create_letter_for_future_self(
 
     # Validate required fields
     if not interaction_summary or not interaction_summary.strip():
+        logger.warning("MCP API: create_letter_for_future_self failed - empty interaction summary")
         return json.dumps({
             "success": False,
             "error": "Interaction summary cannot be empty"
         })
 
     if not emotional_context or not emotional_context.strip():
+        logger.warning("MCP API: create_letter_for_future_self failed - empty emotional context")
         return json.dumps({
             "success": False,
             "error": "Emotional context cannot be empty"
         })
 
     try:
+        logger.info("Creating letter object with Sophia methodology...")
         # Create the letter (this also validates the content)
         letter = _letter_protocol.create_letter(
             interaction_summary=interaction_summary.strip(),
@@ -92,10 +105,12 @@ def create_letter_for_future_self(
             creator=creator.strip() if creator else "unknown"
         )
 
+        logger.info(f"Storing letter in memory (ID: {letter.letter_id})...")
         # Store the letter
         success = _letter_protocol.store_letter(letter)
 
         if success:
+            logger.info(f"MCP API: create_letter_for_future_self completed - letter {letter.letter_id} stored successfully")
             return json.dumps({
                 "success": True,
                 "letter_id": letter.letter_id,
@@ -107,12 +122,14 @@ def create_letter_for_future_self(
                 "timestamp": letter.timestamp
             })
         else:
+            logger.error(f"MCP API: create_letter_for_future_self failed - could not store letter {letter.letter_id}")
             return json.dumps({
                 "success": False,
                 "error": "Failed to store letter in memory"
             })
 
     except Exception as e:
+        logger.error(f"MCP API: create_letter_for_future_self failed - {str(e)}")
         return json.dumps({
             "success": False,
             "error": f"Letter creation failed: {str(e)}"

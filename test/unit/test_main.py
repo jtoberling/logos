@@ -38,9 +38,17 @@ class TestMain:
     @patch('src.main.configure_logging')
     @patch('src.main.get_config')
     @patch('src.main.LogosVectorStore')
-    def test_create_logos_server_vector_store_failure(self, mock_vector_store, mock_get_config, mock_configure_logging):
+    @patch('socket.socket')
+    def test_create_logos_server_vector_store_failure(self, mock_socket, mock_vector_store, mock_get_config, mock_configure_logging):
         """Test server creation when vector store initialization fails."""
+        # Mock socket connection to succeed (return 0 for successful connection)
+        mock_sock_instance = MagicMock()
+        mock_sock_instance.connect_ex.return_value = 0  # Success
+        mock_socket.return_value = mock_sock_instance
+
         mock_config = MagicMock()
+        mock_config.qdrant_host = "127.0.0.1"
+        mock_config.qdrant_port = 6333
         mock_get_config.return_value = mock_config
         mock_vector_store.side_effect = Exception("Vector store error")
 
@@ -76,10 +84,14 @@ class TestMain:
     def test_main_success(self, mock_logger, mock_create_server):
         """Test successful main function execution."""
         mock_server = MagicMock()
+        mock_config = MagicMock()
+        mock_config.mcp_host = "0.0.0.0"
+        mock_config.mcp_port = 6335
         mock_create_server.return_value = mock_server
 
-        # Mock server.run() to avoid infinite loop
-        with patch.object(mock_server, 'run', side_effect=KeyboardInterrupt()):
+        with patch('src.main.get_config', return_value=mock_config):
+            # Mock server.run to raise KeyboardInterrupt to simulate shutdown
+            mock_server.run.side_effect = KeyboardInterrupt()
             main()
 
         mock_create_server.assert_called_once()
@@ -105,13 +117,17 @@ class TestMain:
     def test_main_server_run_failure(self, mock_exit, mock_logger, mock_create_server):
         """Test main function when server.run() fails."""
         mock_server = MagicMock()
+        mock_config = MagicMock()
+        mock_config.mcp_host = "0.0.0.0"
+        mock_config.mcp_port = 6335
         mock_create_server.return_value = mock_server
-        mock_server.run.side_effect = Exception("Server run failed")
 
-        main()
+        with patch('src.main.get_config', return_value=mock_config):
+            # Mock server.run to raise exception
+            mock_server.run.side_effect = Exception("Server run failed")
+            main()
 
         mock_create_server.assert_called_once()
-        mock_server.run.assert_called_once()
         mock_logger.error.assert_called_once()
         mock_exit.assert_called_once_with(1)
 
@@ -120,10 +136,15 @@ class TestMain:
     def test_main_keyboard_interrupt(self, mock_logger, mock_create_server):
         """Test main function with KeyboardInterrupt."""
         mock_server = MagicMock()
+        mock_config = MagicMock()
+        mock_config.mcp_host = "0.0.0.0"
+        mock_config.mcp_port = 6335
         mock_create_server.return_value = mock_server
-        mock_server.run.side_effect = KeyboardInterrupt()
 
-        main()
+        with patch('src.main.get_config', return_value=mock_config):
+            # Mock server.run to raise KeyboardInterrupt
+            mock_server.run.side_effect = KeyboardInterrupt()
+            main()
 
         mock_create_server.assert_called_once()
         mock_logger.info.assert_any_call("Starting Logos MCP server...")

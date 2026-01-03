@@ -31,6 +31,9 @@ FROM python:3.12-slim AS runtime
 # Install minimal runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
+    curl \
+    iputils-ping \
+    netcat-traditional \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user

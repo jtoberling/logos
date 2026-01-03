@@ -75,7 +75,7 @@ class LogosVectorStore:
 
         for collection_name in self.COLLECTIONS.keys():
             if collection_name not in existing_names:
-                logger.info(f"Creating collection '{collection_name}'...")
+                logger.info(f"Creating collection '{collection_name}' with vector size {self.embedder.vector_size}...")
                 self.client.create_collection(
                     collection_name=collection_name,
                     vectors_config=models.VectorParams(
@@ -83,6 +83,12 @@ class LogosVectorStore:
                         distance=models.Distance.COSINE
                     )
                 )
+                logger.info(f"Collection '{collection_name}' created successfully")
+            else:
+                logger.info(f"Collection '{collection_name}' already exists, skipping creation")
+
+        total_collections = len(self.COLLECTIONS)
+        logger.info(f"Vector store initialization complete: {total_collections} collections ready (logos_essence, project_knowledge, canon)")
 
     def upsert(self, collection_name: str, texts: List[str],
                metadatas: Optional[List[Dict[str, Any]]] = None) -> None:

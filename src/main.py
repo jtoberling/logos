@@ -59,6 +59,34 @@ def create_logos_server(config_path: Optional[str] = None) -> FastMCP:
     # Initialize core components
     try:
         # Vector store for memory persistence
+        logger.info(f"Connecting to Qdrant at {config.qdrant_host}:{config.qdrant_port}")
+
+        # Test network connectivity to Qdrant
+        import socket
+        try:
+            logger.info("Testing network connectivity to Qdrant...")
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(10)  # 10 second timeout
+            result = sock.connect_ex((config.qdrant_host, config.qdrant_port))
+            sock.close()
+
+            if result != 0:
+                logger.error(f"Cannot connect to Qdrant at {config.qdrant_host}:{config.qdrant_port} (connection refused)")
+                logger.error("This usually means:")
+                logger.error("  1) Qdrant service is not running")
+                logger.error("  2) Network connectivity issues between services")
+                logger.error("  3) Qdrant is still starting up (check health status)")
+                raise ConnectionError(f"Qdrant service not reachable at {config.qdrant_host}:{config.qdrant_port}")
+            else:
+                logger.info("Network connectivity to Qdrant confirmed")
+        except socket.gaierror as e:
+            logger.error(f"DNS resolution failed for {config.qdrant_host}: {e}")
+            logger.error("This usually means:")
+            logger.error("  1) Services are not on the same Docker network")
+            logger.error("  2) DNS resolution is not working")
+            logger.error("  3) Hostname configuration issue")
+            raise ConnectionError(f"Cannot resolve hostname {config.qdrant_host}: {e}")
+
         vector_store = LogosVectorStore(
             host=config.qdrant_host,
             port=config.qdrant_port
@@ -82,25 +110,30 @@ def create_logos_server(config_path: Optional[str] = None) -> FastMCP:
         raise
 
     # Create FastMCP server
+    logger.info("Creating FastMCP server instance...")
     server = FastMCP(
         name="Logos",
         instructions="Digital personality and memory engine following Sophia methodology. Provides access to personality memories, project knowledge, and constitution.",
         version="0.1.0"
     )
+    logger.info("FastMCP server instance created successfully")
 
     # Initialize tools with dependencies
     try:
+        logger.info("Initializing MCP tools...")
         initialize_tools(vector_store, prompt_manager)
         initialize_file_tools(document_processor, vector_store)
         initialize_memory_tools(letter_protocol)
-        logger.info("Tools initialized successfully")
+        logger.info("All MCP tools initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize tools: {e}")
         raise
 
     # Register tools from modules
     try:
-        # Import and register query tools
+        logger.info("Registering MCP tools with server...")
+
+        # Import tool functions
         from .tools.query_tools import (
             query_logos,
             get_constitution,
@@ -109,7 +142,6 @@ def create_logos_server(config_path: Optional[str] = None) -> FastMCP:
             get_version
         )
 
-        # Import and register file management tools
         from .tools.file_tools import (
             add_file,
             add_file_base64,
@@ -120,7 +152,6 @@ def create_logos_server(config_path: Optional[str] = None) -> FastMCP:
             reindex_file
         )
 
-        # Import and register memory management tools
         from .tools.memory_tools import (
             create_letter_for_future_self,
             get_memory_statistics,
@@ -128,10 +159,32 @@ def create_logos_server(config_path: Optional[str] = None) -> FastMCP:
             retrieve_memories_by_creator
         )
 
-        # Tools are already decorated with @tool(), so they'll be auto-registered
-        logger.info("Query tools registered successfully")
-        logger.info("File management tools registered successfully")
-        logger.info("Memory management tools registered successfully")
+        # Register query tools with the server using decorators
+        server.tool()(query_logos)
+        server.tool()(get_constitution)
+        server.tool()(get_memory_context)
+        server.tool()(get_collection_stats)
+        server.tool()(get_version)
+
+        # Register file management tools with the server using decorators
+        server.tool()(add_file)
+        server.tool()(add_file_base64)
+        server.tool()(list_files)
+        server.tool()(delete_file)
+        server.tool()(get_file_info)
+        server.tool()(get_supported_formats)
+        server.tool()(reindex_file)
+
+        # Register memory management tools with the server using decorators
+        server.tool()(create_letter_for_future_self)
+        server.tool()(get_memory_statistics)
+        server.tool()(retrieve_recent_memories)
+        server.tool()(retrieve_memories_by_creator)
+
+        logger.info("Query tools registered: 5 (query_logos, get_constitution, get_memory_context, get_collection_stats, get_version)")
+        logger.info("File management tools registered: 7 (add_file, add_file_base64, list_files, delete_file, get_file_info, get_supported_formats, reindex_file)")
+        logger.info("Memory management tools registered: 4 (create_letter_for_future_self, get_memory_statistics, retrieve_recent_memories, retrieve_memories_by_creator)")
+        logger.info("Total MCP tools registered: 16 tools across 3 categories")
 
     except Exception as e:
         logger.error(f"Failed to register tools: {e}")
@@ -147,9 +200,19 @@ def main() -> None:
         # Create server
         server = create_logos_server()
 
-        # Start the server
+        # Start the server with HTTP transport for Docker deployment
         logger.info("Starting Logos MCP server...")
-        server.run()
+        config = get_config()
+
+        logger.info(f"Server configuration: HTTP transport on {config.mcp_host}:{config.mcp_port}")
+        logger.info("Initializing HTTP server with MCP protocol support...")
+
+        # Start the server with HTTP transport for Docker deployment
+        server.run(
+            transport="http",
+            host=config.mcp_host,
+            port=config.mcp_port
+        )
 
     except KeyboardInterrupt:
         logger.info("Server shutdown requested by user")

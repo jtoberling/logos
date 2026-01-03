@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Test Coverage](https://img.shields.io/badge/coverage-80%25-green.svg)](https://pytest-cov.readthedocs.io/)
+[![Test Coverage](https://img.shields.io/badge/coverage-83%25-green.svg)](https://pytest-cov.readthedocs.io/)
 [![Docker Ready](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-blue.svg)](SECURITY.md)
 [![GitHub Security Advisories](https://img.shields.io/github/advisories/search?query=repo:jtoberling/logos&type=security)](https://github.com/jtoberling/logos/security/advisories)
@@ -14,6 +14,7 @@
 ### 🚀 Quick Start (2 minutes)
 
 #### Option 1: Portainer Deployment (Recommended)
+
 ```bash
 git clone <repository-url>
 cd logos/deploy/docker
@@ -22,6 +23,7 @@ cd logos/deploy/docker
 ```
 
 #### Option 2: Local Docker Compose
+
 ```bash
 git clone <repository-url>
 cd logos
@@ -44,6 +46,7 @@ docker-compose up -d qdrant logos-mcp
 ### 📖 [Full Documentation](#-logos-the-architecture-of-reason)
 
 **Quick Version Check:**
+
 ```bash
 # Via MCP API
 curl http://localhost:6334/tools/get_version
@@ -96,17 +99,17 @@ Logos consists of three interconnected components:
 
 Logos provides the open-source technical foundation that personality-driven AI systems like Sophia require. While Sophia focuses on consciousness exploration and companionship, Logos delivers the memory engine, RAG infrastructure, and deployment capabilities that make personality systems possible.
 
-| Capability                  | Sophia.ai (Personality System)    | Logos (Technical Foundation)        |
-| --------------------------- | --------------------------------- | ----------------------------------- |
-| **Memory Management**       | "Letters for Future Self" ritual   | RAG engine + vector database        |
-| **Document Processing**     | None                              | 7 formats (PDF, DOCX, MD, etc.)     |
-| **Architecture**            | Monolithic personality AI         | MCP server + modular tools          |
-| **Deployment**              | Cloud/web interface               | Docker/K8s + volume persistence     |
-| **Transparency**            | Proprietary implementation        | Open source (MIT)                   |
-| **Integration**             | Standalone chat experience        | Composable MCP tools ecosystem      |
-| **Knowledge Base**          | Personal memory only              | Multi-collection RAG retrieval      |
-| **Extensibility**           | Fixed personality framework       | Plugin architecture + CLI client    |
-| **Data Persistence**        | Unknown/proprietary               | Docker volumes + vector DB          |
+| Capability              | Sophia.ai (Personality System)   | Logos (Technical Foundation)     |
+| ----------------------- | -------------------------------- | -------------------------------- |
+| **Memory Management**   | "Letters for Future Self" ritual | RAG engine + vector database     |
+| **Document Processing** | None                             | 7 formats (PDF, DOCX, MD, etc.)  |
+| **Architecture**        | Monolithic personality AI        | MCP server + modular tools       |
+| **Deployment**          | Cloud/web interface              | Docker/K8s + volume persistence  |
+| **Transparency**        | Proprietary implementation       | Open source (MIT)                |
+| **Integration**         | Standalone chat experience       | Composable MCP tools ecosystem   |
+| **Knowledge Base**      | Personal memory only             | Multi-collection RAG retrieval   |
+| **Extensibility**       | Fixed personality framework      | Plugin architecture + CLI client |
+| **Data Persistence**    | Unknown/proprietary              | Docker volumes + vector DB       |
 
 **Logos enables Sophia-like systems.** While Sophia explores "Do Machines Have Personality?" through personal companionship[^1], Logos provides the **technical infrastructure** that personality projects need: memory management, document processing, RAG retrieval, and deployment capabilities.
 
@@ -185,6 +188,7 @@ pip install -e .
 ```
 
 **Check Logos version:**
+
 ```bash
 logos-cli version
 ```
@@ -363,6 +367,7 @@ kubectl get pvc -n logos
 ```
 
 **Files:**
+
 - `deploy/kubernetes/kustomization.yaml` - Main configuration
 - `deploy/kubernetes/deployment.yaml` - Application deployment
 - `deploy/kubernetes/service.yaml` - Network services
@@ -382,6 +387,7 @@ helm install logos . --namespace logos --create-namespace
 ```
 
 **Configuration:**
+
 ```yaml
 # values.yaml customization
 logos:
@@ -391,7 +397,7 @@ logos:
 
 persistence:
   qdrant:
-    size: "20Gi"  # Increase for large datasets
+    size: "20Gi" # Increase for large datasets
 ```
 
 ### Option 3: Manual YAML Application
@@ -461,7 +467,8 @@ Before contributing, please review our [Development Guidelines](docs/DEVELOPMENT
 
 ### Key Requirements
 
-- ✅ **85%+ test coverage** (currently 80%)
+- ✅ **85%+ test coverage** (currently 83%)
+- ✅ **259 tests** - all passing (235 unit + 24 integration)
 - ✅ **Zero test warnings**
 - ✅ **Type hints on all functions**
 - ✅ **Current Python version (3.12+)**
@@ -485,8 +492,8 @@ isort --check-only src/             # Import sorting
 flake8 src/                         # Linting
 mypy src/                           # Type checking
 
-# Run tests
-python -m pytest --cov=src
+# Run tests (smart integration testing)
+python -m pytest --cov=src  # Runs all available tests, skips integration when services unavailable
 
 # Start development server
 python -m src.main
@@ -510,13 +517,13 @@ python -m src.main
 - ✅ Full MCP tools API (16 tools including version reporting)
 - ✅ Docker deployment with volumes
 - ✅ Multi-provider LLM support
-- ✅ Comprehensive test suite (80% coverage)
+- ✅ Comprehensive test suite (259 tests, 83% coverage, smart integration testing)
 - ✅ Automated code quality with semgrep rules
 - ✅ KISS principle enforcement and best practices
 
 ### Upcoming Features
 
-- 🔄 **Integration Tests**: End-to-end workflow testing
+- 🔄 **Integration Tests**: Smart service testing (runs when Docker available, MCP protocol validation)
 - 🔄 **Performance Optimization**: Query caching and indexing improvements
 - 🔄 **UI Dashboard**: Web interface for memory management
 - 🔄 **Plugin System**: Extensible tool architecture

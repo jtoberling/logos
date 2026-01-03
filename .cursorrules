@@ -95,6 +95,15 @@ from .config import get_config
 from .engine.vector_store import LogosVectorStore
 ```
 
+## Development Environment
+
+### 1. Virtual Environment
+- **Python venv**: Use the project venv for all development
+- **Activation**: `source venv/bin/activate`
+- **Requirements**: Dependencies are managed via `requirements.txt` and `requirements.in`
+- **Installation**: `pip install -r requirements.txt`
+- **No global installs**: Never install packages globally, always use the venv
+
 ## Implementation Guidelines
 
 ### 1. Function Design

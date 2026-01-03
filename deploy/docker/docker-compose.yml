@@ -20,19 +20,6 @@ services:
       start_period: 40s
     networks:
       - logos-network
-    deploy:
-      mode: replicated
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
 
   # Main Logos MCP server
   logos-mcp:
@@ -80,7 +67,7 @@ services:
       # Use Docker volumes only (Portainer/K8s compatible)
       - logos_data:/app/data:z
       - logos_logs:/app/logs:z
-      - logos_model_cache:/app/cache:z
+      - logos_model_cache:/app/cache/fastembed:z
     networks:
       - logos-network
     healthcheck:
@@ -94,22 +81,10 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 300s
-    deploy:
-      mode: replicated
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 5
-        window: 300s
-      resources:
-        limits:
-          memory: 2G
-          cpus: "1.0"
-        reservations:
-          memory: 1G
-          cpus: "0.5"
+      start_period: 60s
+    mem_limit: 2g
+    mem_reservation: 1g
+    cpus: 1.0
 
   # Optional: Local Ollama LLM service
   ollama:
@@ -124,18 +99,6 @@ services:
       - logos-network
     profiles:
       - llm # Only start with --profile llm
-    deploy:
-      mode: replicated
-      replicas: 1
-      resources:
-        limits:
-          memory: 8G
-          cpus: "2.0"
-        reservations:
-          memory: 4G
-          cpus: "1.0"
-      restart_policy:
-        condition: on-failure
 
   # Optional: LMStudio local LLM service
   lmstudio:
@@ -150,24 +113,11 @@ services:
       - logos-network
     profiles:
       - llm # Only start with --profile llm
-    deploy:
-      mode: replicated
-      replicas: 1
-      resources:
-        limits:
-          memory: 8G
-          cpus: "2.0"
-        reservations:
-          memory: 4G
-          cpus: "1.0"
-      restart_policy:
-        condition: on-failure
 
-# Networks for Swarm compatibility
+# Networks for local development
 networks:
   logos-network:
-    driver: overlay
-    attachable: true
+    driver: bridge
 
 # Volumes
 volumes:

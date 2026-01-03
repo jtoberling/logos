@@ -50,7 +50,9 @@ def initialize_file_tools(document_processor: DocumentProcessor, vector_store: L
     global _file_processor, _vector_store
     _file_processor = document_processor
     _vector_store = vector_store
-    logger.info("File management tools initialized successfully")
+
+    logger.info("File management tools initialized with document processor and vector store")
+    logger.info("Available file tools: add_file, add_file_base64, list_files, delete_file, get_file_info, get_supported_formats, reindex_file")
 
 
 @tool()
@@ -80,7 +82,10 @@ def add_file(
         FileNotFoundError: If the file doesn't exist
         DocumentProcessorError: If processing fails
     """
+    logger.info(f"MCP API: add_file called for '{file_path}' (collection={collection}, chunk_size={chunk_size})")
+
     if not _file_processor or not _vector_store:
+        logger.warning("MCP API: add_file failed - file management tools not initialized")
         return '{"success": false, "error": "File management tools not properly initialized"}'
 
     try:
